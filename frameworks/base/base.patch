@@ -1,0 +1,38 @@
+From 5fa9c813e9d63e950dcf9b6483200e1d2ee2ad0c Mon Sep 17 00:00:00 2001
+From: Dinolek <dinolek@o2.pl>
+Date: Mon, 15 Apr 2019 19:53:24 +0000
+Subject: [PATCH] base
+
+---
+ core/java/android/view/KeyEvent.java                            | 1 +
+ .../core/java/com/android/server/policy/PhoneWindowManager.java | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/core/java/android/view/KeyEvent.java b/core/java/android/view/KeyEvent.java
+index a2147b71..658fea73 100644
+--- a/core/java/android/view/KeyEvent.java
++++ b/core/java/android/view/KeyEvent.java
+@@ -1876,6 +1876,7 @@ public class KeyEvent extends InputEvent implements Parcelable {
+             case KeyEvent.KEYCODE_STEM_1:
+             case KeyEvent.KEYCODE_STEM_2:
+             case KeyEvent.KEYCODE_STEM_3:
++            case KeyEvent.KEYCODE_HOME:
+                 return true;
+         }
+         return false;
+diff --git a/services/core/java/com/android/server/policy/PhoneWindowManager.java b/services/core/java/com/android/server/policy/PhoneWindowManager.java
+index df2d3322..db3e4986 100644
+--- a/services/core/java/com/android/server/policy/PhoneWindowManager.java
++++ b/services/core/java/com/android/server/policy/PhoneWindowManager.java
+@@ -1807,7 +1807,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
+         performHapticFeedbackLw(null, HapticFeedbackConstants.LONG_PRESS, false);
+         switch (mLongPressOnHomeBehavior) {
+             case LONG_PRESS_HOME_ALL_APPS:
+-                launchAllAppsAction();
++                toggleRecentApps();
+                 break;
+             case LONG_PRESS_HOME_ASSIST:
+                 launchAssistAction(null, deviceId);
+-- 
+2.17.1
+

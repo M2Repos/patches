@@ -1,0 +1,73 @@
+From 8c102273c042d1d7d37eb287acc8aec568412306 Mon Sep 17 00:00:00 2001
+From: Dinolek <dinolek@o2.pl>
+Date: Sun, 23 Dec 2018 00:18:25 +0000
+Subject: [PATCH] mblu2
+
+Change-Id: Ia63d1325c3b365726692c489e22ed55f130bae7b
+---
+ liblights/lights.c | 34 +++-------------------------------
+ 1 file changed, 3 insertions(+), 31 deletions(-)
+
+diff --git a/liblights/lights.c b/liblights/lights.c
+index e4203ec2..04ccc708 100644
+--- a/liblights/lights.c
++++ b/liblights/lights.c
+@@ -477,28 +477,9 @@ set_speaker_light_locked(__attribute__((__unused__)) struct light_device_t* dev,
+ }
+ 
+ static void
+-handle_speaker_battery_locked(struct light_device_t* dev)
++handle_speaker_locked(struct light_device_t* dev)
+ {
+-    if (is_lit(&g_battery)) {
+-        set_speaker_light_locked(dev, &g_battery);
+-    } else {
+-    	set_speaker_light_locked(dev, &g_battery); /*Turkey workaround: notification and Low battery case, IPO bootup, NLED cannot blink*/
+-        set_speaker_light_locked(dev, &g_notification);
+-    }
+-}
+-
+-static int
+-set_light_battery(struct light_device_t* dev,
+-        struct light_state_t const* state)
+-{
+-    pthread_mutex_lock(&g_lock);
+-    g_battery = *state;
+-    if (g_haveTrackballLight) {
+-        set_speaker_light_locked(dev, state);
+-    }
+-    handle_speaker_battery_locked(dev);
+-    pthread_mutex_unlock(&g_lock);
+-    return 0;
++    set_speaker_light_locked(dev, &g_notification);
+ }
+ 
+ static int
+@@ -512,7 +493,7 @@ set_light_notifications(struct light_device_t* dev,
+     if (g_haveTrackballLight) {
+         handle_trackball_light_locked(dev);
+     }
+-    handle_speaker_battery_locked(dev);
++    handle_speaker_locked(dev);
+     pthread_mutex_unlock(&g_lock);
+     return 0;
+ }
+@@ -576,15 +557,6 @@ static int open_lights(const struct hw_module_t* module, char const* name,
+         if (access(BUTTON_FILE, F_OK) < 0)
+             return -errno;
+     }
+-    else if (0 == strcmp(LIGHT_ID_BATTERY, name)) {
+-        set_light = set_light_battery;
+-        if (access(RED_LED_FILE, F_OK) < 0)
+-            return -errno;
+-        if (access(GREEN_LED_FILE, F_OK) < 0)
+-            return -errno;
+-        if (access(BLUE_LED_FILE, F_OK) < 0)
+-            return -errno;
+-    }
+     else if (0 == strcmp(LIGHT_ID_NOTIFICATIONS, name)) {
+         set_light = set_light_notifications;
+         if (access(RED_LED_FILE, F_OK) < 0)
+-- 
+2.20.1
+
