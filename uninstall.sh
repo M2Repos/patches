@@ -12,4 +12,5 @@ done
 cd $rootdirectory
 rm -r vendor/mediatek/libs/mblu2
 rm -r vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/mblu2
+rm -r vendor/mediatek/proprietary/modem
 echo "Done!"

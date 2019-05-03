@@ -14,4 +14,5 @@ cp -r patches/vendor/mediatek/libs/mblu2 vendor/mediatek/libs/mblu2
 cp -r vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/k37tv1_64_bsp vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/mblu2
 mv vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/mblu2/k37tv1_64_bsp.mk vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/mblu2/mblu2.mk
 sed -i 's/TARGET=k37tv1_64_bsp/TARGET=mblu2/' vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/mblu2/mblu2.mk
+cp -r patches/vendor/mediatek/proprietary/modem vendor/mediatek/proprietary/modem
 echo "Done!"
