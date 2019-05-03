@@ -20,19 +20,6 @@ index a2147b71..658fea73 100644
                  return true;
          }
          return false;
-diff --git a/services/core/java/com/android/server/policy/PhoneWindowManager.java b/services/core/java/com/android/server/policy/PhoneWindowManager.java
-index df2d3322..db3e4986 100644
---- a/services/core/java/com/android/server/policy/PhoneWindowManager.java
-+++ b/services/core/java/com/android/server/policy/PhoneWindowManager.java
-@@ -1807,7 +1807,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
-         performHapticFeedbackLw(null, HapticFeedbackConstants.LONG_PRESS, false);
-         switch (mLongPressOnHomeBehavior) {
-             case LONG_PRESS_HOME_ALL_APPS:
--                launchAllAppsAction();
-+                toggleRecentApps();
-                 break;
-             case LONG_PRESS_HOME_ASSIST:
-                 launchAssistAction(null, deviceId);
 -- 
 2.17.1
 

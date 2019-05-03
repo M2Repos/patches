@@ -55225,7 +55225,7 @@ index bf66b77a..f7cb5223 100644
 -		msleep(ms);
 -		/* udelay(ms*1000); */
 -	}
-+	udelay(ms*120);
++	udelay(ms*160);
  }
  
  static void lcm_rar(uint32_t ms)

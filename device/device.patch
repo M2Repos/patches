@@ -1,10 +1,10 @@
-From 797b48444919e183bb4946b39f2bbdfb06ff3983 Mon Sep 17 00:00:00 2001
+From 0e38c166433a5ead325a0f746d7d6c27eddcec82 Mon Sep 17 00:00:00 2001
 From: Dinolek <dinolek@o2.pl>
-Date: Mon, 15 Apr 2019 19:30:55 +0000
+Date: Fri, 3 May 2019 21:36:54 +0000
 Subject: [PATCH] device
 
 ---
- mediatek/common/device.mk                     |   8 +-
+ mediatek/common/device.mk                     |  16 +-
  mediatek/mt6735/device.mk                     |  14 +-
  meizu/mblu2/AW9201_ts.kl                      |   1 +
  meizu/mblu2/AndroidProducts.mk                |   1 +
@@ -24,7 +24,7 @@ Subject: [PATCH] device
  meizu/mblu2/mtk-kpd.kl                        |  96 +++
  meizu/mblu2/nfc.cfg                           |  23 +
  meizu/mblu2/nfcse.cfg                         |   8 +
- .../base/core/res/res/values/config.xml       | 107 +++
+ .../base/core/res/res/values/config.xml       | 115 +++
  .../base/core/res/res/xml/power_profile.xml   | 139 ++++
  .../apps/Bluetooth/res/values/config.xml      |  17 +
  .../apps/Bluetooth/res/values/config.xml      |  17 +
@@ -46,7 +46,7 @@ Subject: [PATCH] device
  meizu/mblu2/thermal_eng.conf                  |  90 +++
  meizu/mblu2/thermal_eng_NoBCCT.conf           |  90 +++
  meizu/mblu2/vendorsetup.sh                    |  19 +
- 42 files changed, 3625 insertions(+), 15 deletions(-)
+ 42 files changed, 3637 insertions(+), 19 deletions(-)
  create mode 100755 meizu/mblu2/AW9201_ts.kl
  create mode 100755 meizu/mblu2/AndroidProducts.mk
  create mode 100755 meizu/mblu2/BoardConfig.mk
@@ -89,7 +89,7 @@ Subject: [PATCH] device
  create mode 100755 meizu/mblu2/vendorsetup.sh
 
 diff --git a/mediatek/common/device.mk b/mediatek/common/device.mk
-index 3d74c128..93438f0d 100644
+index 3d74c128..27f5799d 100644
 --- a/mediatek/common/device.mk
 +++ b/mediatek/common/device.mk
 @@ -1763,9 +1763,9 @@ ifeq ($(strip $(OPTR_SPEC_SEG_DEF)),NONE)
@@ -105,6 +105,21 @@ index 3d74c128..93438f0d 100644
  ifneq ($(strip $(MTK_BASIC_PACKAGE)), yes)
    ifneq ($(strip $(MTK_BSP_PACKAGE)), yes)
      PRODUCT_PROPERTY_OVERRIDES += persist.mtk_nlp_switch_support=1
+@@ -3714,10 +3714,10 @@ ifneq ($(wildcard vendor/mediatek/proprietary/packages/apps/DeskClock/Android.mk
+ endif
+ 
+ # SystemUI AOSP code will be replaced by MTK
+-ifneq ($(wildcard vendor/mediatek/proprietary/packages/apps/SystemUI/Android.mk),)
+-PRODUCT_PACKAGES += \
+-    MtkSystemUI
+-endif
++#ifneq ($(wildcard vendor/mediatek/proprietary/packages/apps/SystemUI/Android.mk),)
++#PRODUCT_PACKAGES += \
++#    MtkSystemUI
++#endif
+ 
+ # Stk APP built in according to package.
+ ifeq ($(strip $(MTK_BASIC_PACKAGE)),yes)
 @@ -3972,4 +3972,4 @@ endif
  
  ifeq ($(strip $(MTK_IMSI_SWITCH_SUPPORT)),yes)
@@ -206,7 +221,7 @@ index 00000000..6721cf6b
 +MALLOC_SVELTE := true
 diff --git a/meizu/mblu2/ProjectConfig.mk b/meizu/mblu2/ProjectConfig.mk
 new file mode 100755
-index 00000000..caac70fa
+index 00000000..d0568e24
 --- /dev/null
 +++ b/meizu/mblu2/ProjectConfig.mk
 @@ -0,0 +1,659 @@
@@ -281,7 +296,7 @@ index 00000000..caac70fa
 +CUSTOM_KERNEL_TOUCHPANEL =
 +CUSTOM_KERNEL_USB = mt6577
 +CUSTOM_KERNEL_VIBRATOR = vibrator
-+CUSTOM_MODEM = mblu2_lwg_dsds
++CUSTOM_MODEM = mblu2_lwg_dsds mblu2_ltg_dsds
 +CUSTOM_SEC_AUTH_SUPPORT = no
 +CUSTOM_SEC_SIGNTOOL_SUPPORT = no
 +DCORE_TEST_MODE1 = no
@@ -694,7 +709,7 @@ index 00000000..caac70fa
 +MTK_PQ_SUPPORT = PQ_HW_VER_2
 +MTK_PRIVACY_PROTECTION_LOCK = no
 +MTK_PRODUCT_INFO_SUPPORT = yes
-+MTK_PROTOCOL1_RAT_CONFIG = Lf/Lt/W/T/G
++MTK_PROTOCOL1_RAT_CONFIG = Lf/Lt/W/G
 +MTK_PROTOCOL3_RAT_CONFIG = G
 +MTK_PUMP_EXPRESS_PLUS_30_SUPPORT = no
 +MTK_PUMP_EXPRESS_SUPPORT = no
@@ -1659,10 +1674,10 @@ index 00000000..e42f8cdf
 \ No newline at end of file
 diff --git a/meizu/mblu2/overlay/frameworks/base/core/res/res/values/config.xml b/meizu/mblu2/overlay/frameworks/base/core/res/res/values/config.xml
 new file mode 100755
-index 00000000..f7cfd8c6
+index 00000000..43d19900
 --- /dev/null
 +++ b/meizu/mblu2/overlay/frameworks/base/core/res/res/values/config.xml
-@@ -0,0 +1,107 @@
+@@ -0,0 +1,115 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +
 +<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
@@ -1673,7 +1688,15 @@ index 00000000..f7cfd8c6
 +         This needs to match the constants in
 +         policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
 +    -->
-+    <integer name="config_longPressOnHomeBehavior">1</integer>
++    <integer name="config_longPressOnHomeBehavior">2</integer>
++
++    <!-- Control the behavior when the user double-taps the home button.
++            0 - Nothing
++            1 - Recent apps view in SystemUI
++         This needs to match the constants in
++         policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
++    -->
++    <integer name="config_doubleTapOnHomeBehavior">1</integer>
 +
 +    <!-- Minimum screen brightness setting allowed by the power manager.
 +         The user is forbidden from setting the brightness below this level. -->
