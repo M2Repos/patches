@@ -1,9 +1,8 @@
-From 27eaf99bc21b90567bfdcbc270f973cfabaa065e Mon Sep 17 00:00:00 2001
+From a08eb576321a1a042c23cc4015dac284d1df96d9 Mon Sep 17 00:00:00 2001
 From: Dinolek <dinolek@o2.pl>
-Date: Sun, 23 Dec 2018 00:19:09 +0000
-Subject: [PATCH] mblu2
+Date: Sat, 4 May 2019 00:18:24 +0200
+Subject: [PATCH] mblu2: Add device specific changes
 
-Change-Id: I7c51fa61d5074aa84078285a2a392e7dab092c6c
 ---
  Makefile                                      |    2 +-
  arch/arm64/boot/dts/mblu2.dts                 |  756 +++
@@ -27,7 +26,7 @@ Change-Id: I7c51fa61d5074aa84078285a2a392e7dab092c6c
  .../FT5446/include/tpd_ft5x0x_common.h        |  172 +
  .../mediatek/FT5446/mcap_test_lib.h           |   30 +
  .../mediatek/GT9XX_hotknot/goodix_tool.c      |    2 +
- .../mediatek/GT9XX_hotknot/gt9xx_driver.c     |    7 +-
+ .../mediatek/GT9XX_hotknot/gt9xx_driver.c     |   11 +-
  .../mediatek/GT9XX_hotknot/gt9xx_update.c     |    4 +-
  .../include/config_mblu2/gt9xx_config.h       |  185 +
  .../include/firmware_mblu2/gt9xx_firmware.h   | 5661 +++++++++++++++++
@@ -77,14 +76,14 @@ Change-Id: I7c51fa61d5074aa84078285a2a392e7dab092c6c
  .../mt_battery_meter_table_multi_profile.h    | 5415 +++++++---------
  .../mt-plat/mt6735/include/mach/mt_charging.h |   15 +-
  .../mt-plat/mt6735/include/mach/mt_pmic.h     |    2 +-
- .../ili9881_CA_hd720_dsi_vdo_yassy/Makefile   |   20 +
- .../ili9881_CA_hd720_dsi_vdo_yassy.c          |  435 ++
+ .../ili9881_CA_hd720_dsi_vdo_yassy/Makefile   |    2 +
+ .../ili9881_CA_hd720_dsi_vdo_yassy.c          |  415 ++
  drivers/misc/mediatek/lcm/mt65xx_lcm_list.c   |    9 +
  drivers/misc/mediatek/lcm/mt65xx_lcm_list.h   |    2 +
- .../lcm/otm1285a_hd720_dsi_vdo_by/Makefile    |   20 +
- .../otm1285a_hd720_dsi_vdo_by.c               |  398 ++
- .../lcm/otm1285a_hd720_dsi_vdo_tm/Makefile    |   20 +
- .../otm1285a_hd720_dsi_vdo_tm.c               |  316 +
+ .../lcm/otm1285a_hd720_dsi_vdo_by/Makefile    |    2 +
+ .../otm1285a_hd720_dsi_vdo_by.c               |  380 ++
+ .../lcm/otm1285a_hd720_dsi_vdo_tm/Makefile    |    2 +
+ .../otm1285a_hd720_dsi_vdo_tm.c               |  299 +
  drivers/misc/mediatek/lens/Kconfig            |   18 +
  drivers/misc/mediatek/lens/Makefile           |    2 +-
  drivers/misc/mediatek/lens/main/Makefile      |    6 +
@@ -132,7 +131,7 @@ Change-Id: I7c51fa61d5074aa84078285a2a392e7dab092c6c
  tools/dct/old_dct/EINT_YuSu.cmp               |    1 +
  tools/dct/old_dct/GPIO_YuSu.cmp               |    5 +
  tools/dct/old_dct/I2C_YuSu.cmp                |    8 +-
- 127 files changed, 48544 insertions(+), 5076 deletions(-)
+ 127 files changed, 48437 insertions(+), 5078 deletions(-)
  create mode 100644 arch/arm64/boot/dts/mblu2.dts
  create mode 100644 arch/arm64/boot/dts/mblu2_cust.dtsi
  create mode 100644 arch/arm64/configs/mblu2_defconfig
@@ -200,7 +199,7 @@ Change-Id: I7c51fa61d5074aa84078285a2a392e7dab092c6c
  create mode 100644 drivers/misc/mediatek/touchkey/aw9201/aw9201.c
 
 diff --git a/Makefile b/Makefile
-index d1a2a999..5711d53a 100644
+index d1a2a999d0b..5711d53ac9c 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -395,7 +395,7 @@ LINUXINCLUDE    := \
@@ -214,7 +213,7 @@ index d1a2a999..5711d53a 100644
  
 diff --git a/arch/arm64/boot/dts/mblu2.dts b/arch/arm64/boot/dts/mblu2.dts
 new file mode 100644
-index 00000000..2c6fe4d2
+index 00000000000..2c6fe4d2ad2
 --- /dev/null
 +++ b/arch/arm64/boot/dts/mblu2.dts
 @@ -0,0 +1,756 @@
@@ -976,7 +975,7 @@ index 00000000..2c6fe4d2
 +};*/
 diff --git a/arch/arm64/boot/dts/mblu2_cust.dtsi b/arch/arm64/boot/dts/mblu2_cust.dtsi
 new file mode 100644
-index 00000000..152697cf
+index 00000000000..152697cfd1a
 --- /dev/null
 +++ b/arch/arm64/boot/dts/mblu2_cust.dtsi
 @@ -0,0 +1,279 @@
@@ -1260,7 +1259,7 @@ index 00000000..152697cf
 +
 +
 diff --git a/arch/arm64/boot/dts/mt6735.dts b/arch/arm64/boot/dts/mt6735.dts
-index cb64268b..7ceee103 100644
+index cb64268bc02..7ceee103c8c 100644
 --- a/arch/arm64/boot/dts/mt6735.dts
 +++ b/arch/arm64/boot/dts/mt6735.dts
 @@ -2084,845 +2084,6 @@ initrd=0x44000000,0x300000 loglevel=8 androidboot.hardware=mt6735";
@@ -2165,7 +2164,7 @@ index cb64268b..7ceee103 100644
  			compatible = "mediatek, dsi_te_1-eint";
 diff --git a/arch/arm64/configs/mblu2_defconfig b/arch/arm64/configs/mblu2_defconfig
 new file mode 100644
-index 00000000..988a5e18
+index 00000000000..988a5e1821d
 --- /dev/null
 +++ b/arch/arm64/configs/mblu2_defconfig
 @@ -0,0 +1,3785 @@
@@ -5955,7 +5954,7 @@ index 00000000..988a5e18
 +CONFIG_FONT_AUTOSELECT=y
 +CONFIG_ARCH_HAS_SG_CHAIN=y
 diff --git a/drivers/input/keyboard/mediatek/kpd.c b/drivers/input/keyboard/mediatek/kpd.c
-index 93b9f52d..ae382686 100644
+index 93b9f52dc52..ae3826862ee 100644
 --- a/drivers/input/keyboard/mediatek/kpd.c
 +++ b/drivers/input/keyboard/mediatek/kpd.c
 @@ -951,7 +951,7 @@ static int kpd_pdrv_suspend(struct platform_device *pdev, pm_message_t state)
@@ -5969,7 +5968,7 @@ index 93b9f52d..ae382686 100644
  #endif
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/Kconfig b/drivers/input/touchscreen/mediatek/FT5446/Kconfig
 new file mode 100644
-index 00000000..bc78c5ba
+index 00000000000..bc78c5baf50
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/Kconfig
 @@ -0,0 +1,86 @@
@@ -6062,7 +6061,7 @@ index 00000000..bc78c5ba
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/Makefile b/drivers/input/touchscreen/mediatek/FT5446/Makefile
 new file mode 100644
-index 00000000..ccfcb4d7
+index 00000000000..ccfcb4d7e22
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/Makefile
 @@ -0,0 +1,18 @@
@@ -6086,7 +6085,7 @@ index 00000000..ccfcb4d7
 +
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_Gesture.c b/drivers/input/touchscreen/mediatek/FT5446/focaltech_Gesture.c
 new file mode 100644
-index 00000000..0672395d
+index 00000000000..0672395d72b
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_Gesture.c
 @@ -0,0 +1,478 @@
@@ -6571,7 +6570,7 @@ index 00000000..0672395d
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_core.c b/drivers/input/touchscreen/mediatek/FT5446/focaltech_core.c
 new file mode 100644
-index 00000000..990c8f82
+index 00000000000..990c8f82ba7
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_core.c
 @@ -0,0 +1,2318 @@
@@ -8895,7 +8894,7 @@ index 00000000..990c8f82
 +//modify@zte.com.cn add at 20160605 end
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_core.h b/drivers/input/touchscreen/mediatek/FT5446/focaltech_core.h
 new file mode 100644
-index 00000000..4065cf99
+index 00000000000..4065cf990ab
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_core.h
 @@ -0,0 +1,361 @@
@@ -9262,7 +9261,7 @@ index 00000000..4065cf99
 +//modify@zte.com.cn add at 20160605 begin
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_core_old.c b/drivers/input/touchscreen/mediatek/FT5446/focaltech_core_old.c
 new file mode 100644
-index 00000000..4a0f8684
+index 00000000000..4a0f8684408
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_core_old.c
 @@ -0,0 +1,1765 @@
@@ -11034,7 +11033,7 @@ index 00000000..4a0f8684
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_ctl.c b/drivers/input/touchscreen/mediatek/FT5446/focaltech_ctl.c
 new file mode 100644
-index 00000000..bb220603
+index 00000000000..bb220603ff9
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_ctl.c
 @@ -0,0 +1,410 @@
@@ -11450,7 +11449,7 @@ index 00000000..bb220603
 +//modify@zte.com.cn add at 20160605 end
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_esd_protection.c b/drivers/input/touchscreen/mediatek/FT5446/focaltech_esd_protection.c
 new file mode 100644
-index 00000000..521efe9c
+index 00000000000..521efe9c1f3
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_esd_protection.c
 @@ -0,0 +1,223 @@
@@ -11680,7 +11679,7 @@ index 00000000..521efe9c
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_ex_fun.c b/drivers/input/touchscreen/mediatek/FT5446/focaltech_ex_fun.c
 new file mode 100644
-index 00000000..c78bf01d
+index 00000000000..c78bf01d626
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_ex_fun.c
 @@ -0,0 +1,1227 @@
@@ -12914,7 +12913,7 @@ index 00000000..c78bf01d
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_flash.c b/drivers/input/touchscreen/mediatek/FT5446/focaltech_flash.c
 new file mode 100644
-index 00000000..bec5cc33
+index 00000000000..bec5cc338f9
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_flash.c
 @@ -0,0 +1,4338 @@
@@ -17258,7 +17257,7 @@ index 00000000..bec5cc33
 +//modify@zte.com.cn add at 20160605 end
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/ft_gesture_lib.h b/drivers/input/touchscreen/mediatek/FT5446/ft_gesture_lib.h
 new file mode 100644
-index 00000000..31270fe2
+index 00000000000..31270fe25eb
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/ft_gesture_lib.h
 @@ -0,0 +1,26 @@
@@ -17291,7 +17290,7 @@ index 00000000..31270fe2
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/include/firmware1/temp b/drivers/input/touchscreen/mediatek/FT5446/include/firmware1/temp
 new file mode 100644
-index 00000000..fa4aab9d
+index 00000000000..fa4aab9d3d2
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/include/firmware1/temp
 @@ -0,0 +1,3364 @@
@@ -20662,7 +20661,7 @@ index 00000000..fa4aab9d
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/include/firmware1/tpd_custom_upgrade.h b/drivers/input/touchscreen/mediatek/FT5446/include/firmware1/tpd_custom_upgrade.h
 new file mode 100644
-index 00000000..99fd4963
+index 00000000000..99fd4963392
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/include/firmware1/tpd_custom_upgrade.h
 @@ -0,0 +1,102 @@
@@ -20770,7 +20769,7 @@ index 00000000..99fd4963
 +//modify@zte.com.cn add at 20160605 end
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/include/tpd_ft5x0x_common.h b/drivers/input/touchscreen/mediatek/FT5446/include/tpd_ft5x0x_common.h
 new file mode 100644
-index 00000000..b0105c15
+index 00000000000..6ed089d0818
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/include/tpd_ft5x0x_common.h
 @@ -0,0 +1,172 @@
@@ -20839,8 +20838,8 @@ index 00000000..b0105c15
 +//#define CONFIG_TPD_HAVE_CALIBRATION
 +/* #define TPD_CALIBRATION_MATRIX	{962, 0, 0, 0, 1600, 0, 0, 0}; */
 +
-+#define TPD_CALIBRATION_MATRIX_ROTATION_NORMAL  {-4096, 0, 800*4096, 0, -4096, 1280*4096, 0, 0}
-+#define TPD_CALIBRATION_MATRIX_ROTATION_FACTORY {-4096, 0, 800*4096, 0, -4096, 1280*4096, 0, 0}
++#define TPD_CALIBRATION_MATRIX_ROTATION_NORMAL  {-4096, 0, 720*4096, 0, -4096, 1280*4096, 0, 0}
++#define TPD_CALIBRATION_MATRIX_ROTATION_FACTORY {-4096, 0, 720*4096, 0, -4096, 1280*4096, 0, 0}
 +/* #define TPD_CALIBRATION_MATRIX_ROTATION_NORMAL  {-5328, 0, 800*4096, 0, 4096, 0, 0, 0}; */
 +/* #define TPD_CALIBRATION_MATRIX_ROTATION_FACTORY  {-5328, 0, 800*4096, 0, 4096, 0, 0, 0}; */
 +
@@ -20948,7 +20947,7 @@ index 00000000..b0105c15
 +//modify@zte.com.cn add at 20160605 end
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/mcap_test_lib.h b/drivers/input/touchscreen/mediatek/FT5446/mcap_test_lib.h
 new file mode 100644
-index 00000000..1965316b
+index 00000000000..1965316b519
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/mcap_test_lib.h
 @@ -0,0 +1,30 @@
@@ -20984,7 +20983,7 @@ index 00000000..1965316b
 +//modify@zte.com.cn add at 20160605 end
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/goodix_tool.c b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/goodix_tool.c
-index 52b77ece..72f2a1da 100644
+index 52b77ece2e7..72f2a1dad09 100644
 --- a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/goodix_tool.c
 +++ b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/goodix_tool.c
 @@ -503,6 +503,7 @@ static s32 goodix_tool_write(struct file *filp, const char __user *buff, unsigne
@@ -21004,7 +21003,7 @@ index 52b77ece..72f2a1da 100644
  	else if (21 == cmd_head.wr) {
  		u16 wait_hotknot_timeout = 0;
 diff --git a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_driver.c b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_driver.c
-index 079b9902..cdd53c33 100644
+index 079b99020ca..e770ad5bcde 100644
 --- a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_driver.c
 +++ b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_driver.c
 @@ -36,8 +36,9 @@
@@ -21036,8 +21035,20 @@ index 079b9902..cdd53c33 100644
  	if (node) {
  		gpio_direction_input(tpd_int_gpio_number);
  		msleep(20);
+@@ -2347,9 +2348,9 @@ static void tpd_down(s32 x, s32 y, s32 size, s32 id)
+ 
+ static void tpd_up(s32 x, s32 y, s32 id)
+ {
+-	/* input_report_abs(tpd->dev, ABS_MT_PRESSURE, 0); */
++	input_report_abs(tpd->dev, ABS_MT_PRESSURE, 0);
+ 	input_report_key(tpd->dev, BTN_TOUCH, 0);
+-	/* input_report_abs(tpd->dev, ABS_MT_TOUCH_MAJOR, 0); */
++	input_report_abs(tpd->dev, ABS_MT_TOUCH_MAJOR, 0);
+ 	input_mt_sync(tpd->dev);
+ 	TPD_DEBUG_SET_TIME;
+ 	TPD_EM_PRINT(tpd_history_x, tpd_history_y,
 diff --git a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_update.c b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_update.c
-index f24ad7de..ef119ca1 100644
+index f24ad7de8f3..ef119ca1da8 100644
 --- a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_update.c
 +++ b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_update.c
 @@ -140,7 +140,7 @@ u8 load_fw_process = 0;
@@ -21060,7 +21071,7 @@ index f24ad7de..ef119ca1 100644
  	s32 ret = 0;
 diff --git a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/include/config_mblu2/gt9xx_config.h b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/include/config_mblu2/gt9xx_config.h
 new file mode 100644
-index 00000000..d5f618ac
+index 00000000000..d5f618ac85d
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/include/config_mblu2/gt9xx_config.h
 @@ -0,0 +1,185 @@
@@ -21251,7 +21262,7 @@ index 00000000..d5f618ac
 +#endif /* _GT1X_CONFIG_H_ */
 diff --git a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/include/firmware_mblu2/gt9xx_firmware.h b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/include/firmware_mblu2/gt9xx_firmware.h
 new file mode 100644
-index 00000000..355f705d
+index 00000000000..355f705d5d9
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/include/firmware_mblu2/gt9xx_firmware.h
 @@ -0,0 +1,5661 @@
@@ -26918,7 +26929,7 @@ index 00000000..355f705d
 +#endif
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/Kconfig b/drivers/input/touchscreen/mediatek/Kconfig
-index aeb3452b..dd08bf99 100644
+index aeb3452bb99..dd08bf99508 100644
 --- a/drivers/input/touchscreen/mediatek/Kconfig
 +++ b/drivers/input/touchscreen/mediatek/Kconfig
 @@ -71,6 +71,19 @@ config TOUCHSCREEN_MTK_GT9XX_HOTKNOT
@@ -26942,7 +26953,7 @@ index aeb3452b..dd08bf99 100644
  	bool "GT9XX hotknot phone for Mediatek package"
  	default n
 diff --git a/drivers/input/touchscreen/mediatek/Makefile b/drivers/input/touchscreen/mediatek/Makefile
-index 361741fb..2b027a11 100644
+index 361741fbead..2b027a116f9 100644
 --- a/drivers/input/touchscreen/mediatek/Makefile
 +++ b/drivers/input/touchscreen/mediatek/Makefile
 @@ -14,6 +14,7 @@ obj-$(CONFIG_TOUCHSCREEN_MTK_GT1151)	+=  GT1151/
@@ -26954,7 +26965,7 @@ index 361741fb..2b027a11 100644
  obj-$(CONFIG_TOUCHSCREEN_MTK_SYNAPTICS_I2C_RMI4)	+=  synaptics_i2c_rmi4/
  obj-$(CONFIG_TOUCHSCREEN_MTK_GT928)	+=  GT928/
 diff --git a/drivers/misc/mediatek/Kconfig b/drivers/misc/mediatek/Kconfig
-index f9868214..0de51fe0 100644
+index f98682147e5..0de51fe05a3 100644
 --- a/drivers/misc/mediatek/Kconfig
 +++ b/drivers/misc/mediatek/Kconfig
 @@ -309,6 +309,7 @@ source "drivers/misc/mediatek/audio_ipi/Kconfig"
@@ -26966,7 +26977,7 @@ index f9868214..0de51fe0 100644
  source "drivers/misc/mediatek/usb11/Kconfig"
  source "drivers/misc/mediatek/usb20/Kconfig"
 diff --git a/drivers/misc/mediatek/Makefile b/drivers/misc/mediatek/Makefile
-index 0ca10bee..dec683a4 100644
+index 0ca10bee219..dec683a4138 100644
 --- a/drivers/misc/mediatek/Makefile
 +++ b/drivers/misc/mediatek/Makefile
 @@ -80,6 +80,7 @@ obj-$(CONFIG_MTK_DEVINFO_DRIVER_V2) += devinfo/
@@ -26979,7 +26990,7 @@ index 0ca10bee..dec683a4 100644
  obj-$(CONFIG_MTK_SMI_EXT)	+= smi/
 diff --git a/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/Makefile b/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/Makefile
 new file mode 100644
-index 00000000..2fa52e81
+index 00000000000..2fa52e81598
 --- /dev/null
 +++ b/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/Makefile
 @@ -0,0 +1,3 @@
@@ -26988,7 +26999,7 @@ index 00000000..2fa52e81
 +
 diff --git a/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/s5k3l2_eeprom.c b/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/s5k3l2_eeprom.c
 new file mode 100644
-index 00000000..4ff7889c
+index 00000000000..4ff7889cdb3
 --- /dev/null
 +++ b/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/s5k3l2_eeprom.c
 @@ -0,0 +1,703 @@
@@ -27698,7 +27709,7 @@ index 00000000..4ff7889c
 \ No newline at end of file
 diff --git a/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/s5k3l2_eeprom.h b/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/s5k3l2_eeprom.h
 new file mode 100644
-index 00000000..ce384ee5
+index 00000000000..ce384ee5a49
 --- /dev/null
 +++ b/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/s5k3l2_eeprom.h
 @@ -0,0 +1,35 @@
@@ -27810,7 +27821,7 @@ literal 0
 HcmV?d00001
 
 diff --git a/drivers/misc/mediatek/flashlight/Kconfig b/drivers/misc/mediatek/flashlight/Kconfig
-index 16624048..7a1c93e4 100644
+index 16624048ffe..7a1c93e47ee 100644
 --- a/drivers/misc/mediatek/flashlight/Kconfig
 +++ b/drivers/misc/mediatek/flashlight/Kconfig
 @@ -10,6 +10,12 @@ config CUSTOM_KERNEL_FLASHLIGHT
@@ -27827,7 +27838,7 @@ index 16624048..7a1c93e4 100644
  	bool "Mediatek flashlight driver build as module"
  	default n
 diff --git a/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/Makefile b/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/Makefile
-index cb5892d5..2f3413a4 100644
+index cb5892d5b35..2f3413a407e 100644
 --- a/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/Makefile
 +++ b/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/Makefile
 @@ -17,6 +17,7 @@
@@ -27840,7 +27851,7 @@ index cb5892d5..2f3413a4 100644
  obj-m				+= flashlight_device.o
 diff --git a/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/leds_sky81294.c b/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/leds_sky81294.c
 new file mode 100644
-index 00000000..85d25ff4
+index 00000000000..85d25ff4b9a
 --- /dev/null
 +++ b/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/leds_sky81294.c
 @@ -0,0 +1,248 @@
@@ -28094,7 +28105,7 @@ index 00000000..85d25ff4
 +MODULE_LICENSE("GPL v2");
 \ No newline at end of file
 diff --git a/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/leds_strobe.c b/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/leds_strobe.c
-index 1f33d6b8..e8c62696 100644
+index 1f33d6b8dd2..e8c62696192 100644
 --- a/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/leds_strobe.c
 +++ b/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/leds_strobe.c
 @@ -38,7 +38,8 @@
@@ -28264,7 +28275,7 @@ index 1f33d6b8..e8c62696 100644
  /*	PK_DBG(" FL_Init line=%d\n", __LINE__); */
  	return 0;
 diff --git a/drivers/misc/mediatek/flashlight/src/mt6735/kd_flashlightlist.c b/drivers/misc/mediatek/flashlight/src/mt6735/kd_flashlightlist.c
-index 86b0a6da..a06c78a1 100644
+index 86b0a6da22c..a06c78a1b04 100644
 --- a/drivers/misc/mediatek/flashlight/src/mt6735/kd_flashlightlist.c
 +++ b/drivers/misc/mediatek/flashlight/src/mt6735/kd_flashlightlist.c
 @@ -291,6 +291,7 @@ static int decFlash(void)
@@ -28328,7 +28339,7 @@ index 86b0a6da..a06c78a1 100644
  
  	logI("[flashlight_probe] done! ~");
 diff --git a/drivers/misc/mediatek/gpu/Makefile b/drivers/misc/mediatek/gpu/Makefile
-index 3f785ea2..29fb48a7 100644
+index 3f785ea28d9..29fb48a7bed 100644
 --- a/drivers/misc/mediatek/gpu/Makefile
 +++ b/drivers/misc/mediatek/gpu/Makefile
 @@ -15,7 +15,6 @@ obj-y += ged/
@@ -28340,7 +28351,7 @@ index 3f785ea2..29fb48a7 100644
  # GPU R5P0
  ifeq ($(CONFIG_MTK_GPU_R5P0),y)
 diff --git a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index 07b372d1..2db56d76 100755
+index 07b372d1b6f..2db56d76ff7 100755
 --- a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28350,7 +28361,7 @@ index 07b372d1..2db56d76 100755
  CONFIG_MALI_MIDGARD := y
  
 diff --git a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index a6b056c0..efbf3889 100644
+index a6b056c0143..efbf3889ec7 100644
 --- a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28360,7 +28371,7 @@ index a6b056c0..efbf3889 100644
  
  #build support for a ARM Mali Midgard GPU
 diff --git a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p1/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p1/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index a6b056c0..efbf3889 100644
+index a6b056c0143..efbf3889ec7 100644
 --- a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p1/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p1/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28370,7 +28381,7 @@ index a6b056c0..efbf3889 100644
  
  #build support for a ARM Mali Midgard GPU
 diff --git a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r16p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r16p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index a6b056c0..efbf3889 100755
+index a6b056c0143..efbf3889ec7 100755
 --- a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r16p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r16p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28380,7 +28391,7 @@ index a6b056c0..efbf3889 100755
  
  #build support for a ARM Mali Midgard GPU
 diff --git a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r18p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r18p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index bc70cb10..a413a15a 100755
+index bc70cb10edb..a413a15ab80 100755
 --- a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r18p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r18p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28390,7 +28401,7 @@ index bc70cb10..a413a15a 100755
  
  #build support for a ARM Mali Midgard GPU
 diff --git a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index af229c65..62a06517 100755
+index af229c65ba8..62a06517419 100755
 --- a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28400,7 +28411,7 @@ index af229c65..62a06517 100755
  
  #build support for a ARM Mali Midgard GPU
 diff --git a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0_v2/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0_v2/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index 8546711f..af00cfe5 100755
+index 8546711ffcf..af00cfe5aec 100755
 --- a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0_v2/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0_v2/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28410,7 +28421,7 @@ index 8546711f..af00cfe5 100755
  
  #build support for a ARM Mali Midgard GPU
 diff --git a/drivers/misc/mediatek/gpu/gpu_rgx/Makefile b/drivers/misc/mediatek/gpu/gpu_rgx/Makefile
-index fbe59293..dfc4aa3a 100644
+index fbe592933e3..dfc4aa3adeb 100644
 --- a/drivers/misc/mediatek/gpu/gpu_rgx/Makefile
 +++ b/drivers/misc/mediatek/gpu/gpu_rgx/Makefile
 @@ -12,7 +12,6 @@
@@ -28424,7 +28435,7 @@ index fbe59293..dfc4aa3a 100644
 diff --git a/drivers/misc/mediatek/gpu/mt6735/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/mt6735/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 old mode 100755
 new mode 100644
-index 93a88886..cf7ca6d6
+index 93a8888609a..cf7ca6d6d42
 --- a/drivers/misc/mediatek/gpu/mt6735/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/mt6735/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28436,7 +28447,7 @@ index 93a88886..cf7ca6d6
 diff --git a/drivers/misc/mediatek/gpu/mt6735/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/mt6735/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 old mode 100755
 new mode 100644
-index 8546711f..af00cfe5
+index 8546711ffcf..af00cfe5aec
 --- a/drivers/misc/mediatek/gpu/mt6735/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/mt6735/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28446,7 +28457,7 @@ index 8546711f..af00cfe5
  
  #build support for a ARM Mali Midgard GPU
 diff --git a/drivers/misc/mediatek/gpu/mt6735/mali/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/mt6735/mali/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index 04587e33..7b45353c 100755
+index 04587e33616..7b45353cddf 100755
 --- a/drivers/misc/mediatek/gpu/mt6735/mali/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/mt6735/mali/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28456,7 +28467,7 @@ index 04587e33..7b45353c 100755
  CONFIG_MALI_MIDGARD := y
  
 diff --git a/drivers/misc/mediatek/imgsensor/inc/kd_imgsensor.h b/drivers/misc/mediatek/imgsensor/inc/kd_imgsensor.h
-index f210e162..fd463dbc 100644
+index f210e162fed..fd463dbc537 100644
 --- a/drivers/misc/mediatek/imgsensor/inc/kd_imgsensor.h
 +++ b/drivers/misc/mediatek/imgsensor/inc/kd_imgsensor.h
 @@ -159,6 +159,7 @@
@@ -28494,7 +28505,7 @@ index f210e162..fd463dbc 100644
  #define SENSOR_DRVNAME_S5K3H2YX_MIPI_RAW        "s5k3h2yxmipiraw"
  #define SENSOR_DRVNAME_S5K3H7Y_MIPI_RAW         "s5k3h7ymipiraw"
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.c b/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.c
-index de8d6f46..72bb5ba7 100644
+index de8d6f46f42..72bb5ba7b34 100644
 --- a/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.c
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.c
 @@ -43,7 +43,6 @@
@@ -28948,7 +28959,7 @@ index de8d6f46..72bb5ba7 100644
  	}
  
  	return 0;
-@@ -686,696 +520,7 @@ _kdCISModulePowerOn_exit_:
+@@ -686,696 +520,7 @@ int kdCISModulePowerOn(CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx, char *currSenso
  	return -EIO;
  
  }
@@ -29646,7 +29657,7 @@ index de8d6f46..72bb5ba7 100644
  
  /* !-- */
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.h b/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.h
-index 822a20eb..a67bdd39 100644
+index 822a20eb081..a67bdd39723 100644
 --- a/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.h
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.h
 @@ -92,7 +92,8 @@ typedef enum {
@@ -29660,7 +29671,7 @@ index 822a20eb..a67bdd39 100644
  
  extern void ISP_MCLK1_EN(bool En);
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/kd_sensorlist.h b/drivers/misc/mediatek/imgsensor/src/mt6735/kd_sensorlist.h
-index 73f2a7ea..fe92c3fe 100644
+index 73f2a7eab20..fe92c3fe707 100644
 --- a/drivers/misc/mediatek/imgsensor/src/mt6735/kd_sensorlist.h
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/kd_sensorlist.h
 @@ -38,6 +38,9 @@ UINT32 OV8825_MIPI_RAW_SensorInit(PSENSOR_FUNCTION_STRUCT *pfFunc);
@@ -29691,7 +29702,7 @@ index 73f2a7ea..fe92c3fe 100644
  #endif
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/Makefile b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/Makefile
 new file mode 100644
-index 00000000..738d02be
+index 00000000000..738d02beec7
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/Makefile
 @@ -0,0 +1,14 @@
@@ -29711,7 +29722,7 @@ index 00000000..738d02be
 +obj-y += ov5670mipi_Sensor.o
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/ov5670mipi_Sensor.c b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/ov5670mipi_Sensor.c
 new file mode 100644
-index 00000000..e3d27388
+index 00000000000..e3d27388f4c
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/ov5670mipi_Sensor.c
 @@ -0,0 +1,2053 @@
@@ -31770,7 +31781,7 @@ index 00000000..e3d27388
 +}	/*	OV5670_MIPI_RAW_SensorInit	*/
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/ov5670mipi_Sensor.h b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/ov5670mipi_Sensor.h
 new file mode 100644
-index 00000000..7761fa78
+index 00000000000..7761fa78462
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/ov5670mipi_Sensor.h
 @@ -0,0 +1,136 @@
@@ -31912,7 +31923,7 @@ index 00000000..7761fa78
 +
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/Makefile b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/Makefile
 new file mode 100644
-index 00000000..74d3a6e5
+index 00000000000..74d3a6e5179
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/Makefile
 @@ -0,0 +1,14 @@
@@ -31932,7 +31943,7 @@ index 00000000..74d3a6e5
 +obj-y += ov5670mipi_Sensor_geer.o
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/ov5670mipi_Sensor_geer.c b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/ov5670mipi_Sensor_geer.c
 new file mode 100644
-index 00000000..9c9222ca
+index 00000000000..9c9222cade2
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/ov5670mipi_Sensor_geer.c
 @@ -0,0 +1,2055 @@
@@ -33993,7 +34004,7 @@ index 00000000..9c9222ca
 +}	/*	OV5670_MIPI_RAW_SensorInit	*/
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/ov5670mipi_Sensor_geer.h b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/ov5670mipi_Sensor_geer.h
 new file mode 100644
-index 00000000..7761fa78
+index 00000000000..7761fa78462
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/ov5670mipi_Sensor_geer.h
 @@ -0,0 +1,136 @@
@@ -34135,7 +34146,7 @@ index 00000000..7761fa78
 +
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/Makefile b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/Makefile
 new file mode 100644
-index 00000000..1c13792b
+index 00000000000..1c13792bf2b
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/Makefile
 @@ -0,0 +1,14 @@
@@ -34155,7 +34166,7 @@ index 00000000..1c13792b
 +obj-y += s5k3l2mipiraw_Sensor.o
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/s5k3l2mipiraw_Sensor.c b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/s5k3l2mipiraw_Sensor.c
 new file mode 100644
-index 00000000..f0e812c8
+index 00000000000..f0e812c8bbe
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/s5k3l2mipiraw_Sensor.c
 @@ -0,0 +1,2632 @@
@@ -36793,7 +36804,7 @@ index 00000000..f0e812c8
 +}    /*    OV5693_MIPI_RAW_SensorInit    */
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/s5k3l2mipiraw_Sensor.h b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/s5k3l2mipiraw_Sensor.h
 new file mode 100644
-index 00000000..0f0a7e18
+index 00000000000..0f0a7e18508
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/s5k3l2mipiraw_Sensor.h
 @@ -0,0 +1,122 @@
@@ -36921,7 +36932,7 @@ index 00000000..0f0a7e18
 +
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/Makefile b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/Makefile
 new file mode 100644
-index 00000000..faf298f2
+index 00000000000..faf298f2b2c
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/Makefile
 @@ -0,0 +1,14 @@
@@ -36941,7 +36952,7 @@ index 00000000..faf298f2
 +obj-y += s5k3l2mipiraw_Sensor_geer.o
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/s5k3l2mipiraw_Sensor_geer.c b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/s5k3l2mipiraw_Sensor_geer.c
 new file mode 100644
-index 00000000..e3e3d176
+index 00000000000..e3e3d176e47
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/s5k3l2mipiraw_Sensor_geer.c
 @@ -0,0 +1,2632 @@
@@ -39579,7 +39590,7 @@ index 00000000..e3e3d176
 +}    /*    OV5693_MIPI_RAW_SensorInit    */
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/s5k3l2mipiraw_Sensor_geer.h b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/s5k3l2mipiraw_Sensor_geer.h
 new file mode 100644
-index 00000000..0f0a7e18
+index 00000000000..0f0a7e18508
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/s5k3l2mipiraw_Sensor_geer.h
 @@ -0,0 +1,122 @@
@@ -39706,7 +39717,7 @@ index 00000000..0f0a7e18
 +extern void kdSetI2CSpeed(u16 i2cSpeed);
 +
 diff --git a/drivers/misc/mediatek/include/mt-plat/battery_common.h b/drivers/misc/mediatek/include/mt-plat/battery_common.h
-index d47ff68d..8e63ef16 100644
+index d47ff68d061..8e63ef16ece 100644
 --- a/drivers/misc/mediatek/include/mt-plat/battery_common.h
 +++ b/drivers/misc/mediatek/include/mt-plat/battery_common.h
 @@ -21,7 +21,9 @@
@@ -39720,7 +39731,7 @@ index d47ff68d..8e63ef16 100644
  #define CONSTANT_VOLTAGE_CHARGE_VOLTAGE     (4200)
  #define CV_DROPDOWN_VOLTAGE                 (4000)
 diff --git a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter.h b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter.h
-index 8bf7da33..3a5323b5 100644
+index 8bf7da33671..3a5323b5d24 100644
 --- a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter.h
 +++ b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter.h
 @@ -21,7 +21,7 @@
@@ -39787,7 +39798,7 @@ index 8bf7da33..3a5323b5 100644
  #elif defined(CONFIG_ARCH_MT6735M)
  /* ============================================================
 diff --git a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter_table_multi_profile.h b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter_table_multi_profile.h
-index 48648dbc..6b3943eb 100644
+index 48648dbcc14..6b3943eb13c 100644
 --- a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter_table_multi_profile.h
 +++ b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter_table_multi_profile.h
 @@ -22,20 +22,20 @@
@@ -45376,7 +45387,7 @@ index 48648dbc..6b3943eb 100644
  
 +
 diff --git a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_charging.h b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_charging.h
-index c1746343..cc05b9e1 100644
+index c17463433dc..cc05b9e164f 100644
 --- a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_charging.h
 +++ b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_charging.h
 @@ -29,17 +29,17 @@
@@ -45429,7 +45440,7 @@ index c1746343..cc05b9e1 100644
  /* JEITA parameter */
  /*#define MTK_JEITA_STANDARD_SUPPORT*/
 diff --git a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_pmic.h b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_pmic.h
-index 051b1783..68f6383f 100644
+index 051b17839f9..68f6383fe97 100644
 --- a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_pmic.h
 +++ b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_pmic.h
 @@ -49,7 +49,7 @@
@@ -45443,72 +45454,39 @@ index 051b1783..68f6383f 100644
  
 diff --git a/drivers/misc/mediatek/lcm/ili9881_CA_hd720_dsi_vdo_yassy/Makefile b/drivers/misc/mediatek/lcm/ili9881_CA_hd720_dsi_vdo_yassy/Makefile
 new file mode 100644
-index 00000000..e962a1d5
+index 00000000000..912c81ad8c0
 --- /dev/null
 +++ b/drivers/misc/mediatek/lcm/ili9881_CA_hd720_dsi_vdo_yassy/Makefile
-@@ -0,0 +1,20 @@
-+#
-+# Copyright (C) 2015 MediaTek Inc.
-+#
-+# This program is free software: you can redistribute it and/or modify
-+# it under the terms of the GNU General Public License version 2 as
-+# published by the Free Software Foundation.
-+#
-+# This program is distributed in the hope that it will be useful,
-+# but WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+# GNU General Public License for more details.
-+#
-+
-+#
-+# Makefile for misc devices that really don't fit anywhere else.
-+#
-+
+@@ -0,0 +1,2 @@
 +obj-y += ili9881_CA_hd720_dsi_vdo_yassy.o
-+
 +ccflags-$(CONFIG_MTK_LCM) += -I$(srctree)/drivers/misc/mediatek/lcm/inc
 diff --git a/drivers/misc/mediatek/lcm/ili9881_CA_hd720_dsi_vdo_yassy/ili9881_CA_hd720_dsi_vdo_yassy.c b/drivers/misc/mediatek/lcm/ili9881_CA_hd720_dsi_vdo_yassy/ili9881_CA_hd720_dsi_vdo_yassy.c
 new file mode 100644
-index 00000000..2df9f0ea
+index 00000000000..137fc0c95c3
 --- /dev/null
 +++ b/drivers/misc/mediatek/lcm/ili9881_CA_hd720_dsi_vdo_yassy/ili9881_CA_hd720_dsi_vdo_yassy.c
-@@ -0,0 +1,435 @@
-+/*
-+ * Copyright (C) 2015 MediaTek Inc.
-+ *
-+ * This program is free software: you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ */
-+
+@@ -0,0 +1,415 @@
 +#include <mt-plat/mt_gpio.h>
 +#include <mach/gpio_const.h>
 +#include <linux/string.h>
 +#include "lcm_drv.h"
 +
-+#define LCM_ID_ILI9881						0x9881
++#define LCM_ID_ILI9881	0x9881
 +
-+#define FRAME_WIDTH  						(720)
-+#define FRAME_HEIGHT 						(1280)
++#define FRAME_HEIGHT	(1280)
++#define FRAME_WIDTH	(720)
 +
-+#define REGFLAG_DELAY			 			0xFC
-+#define REGFLAG_END_OF_TABLE	  				0xFD
++#define REGFLAG_DELAY	0xFC
++#define REGFLAG_END_OF_TABLE	0xFD
 +
-+#define GPIO_LCM_PWR_EN						(GPIO119 | 0x80000000)
++#define GPIO_LCM_PWR_EN	(GPIO119 | 0x80000000)
 +
-+#define SET_RESET_PIN(v)					(lcm_util.set_reset_pin((v)))
-+#define MDELAY(n) 						(lcm_util.mdelay(n))
++#define MDELAY(n)	(lcm_util.mdelay(n))
++#define SET_RESET_PIN(v)	(lcm_util.set_reset_pin((v)))
 +
++#define dsi_set_cmdq(pdata, queue_size, force_update)	lcm_util.dsi_set_cmdq(pdata, queue_size, force_update)
 +#define dsi_set_cmdq_V2(cmd, count, ppara, force_update)	lcm_util.dsi_set_cmdq_V2(cmd, count, ppara, force_update)
-+#define dsi_set_cmdq(pdata, queue_size, force_update)		lcm_util.dsi_set_cmdq(pdata, queue_size, force_update)
-+#define read_reg_v2(cmd, buffer, buffer_size)			lcm_util.dsi_dcs_read_lcm_reg_v2(cmd, buffer, buffer_size)
-+
-+#define __SAME_IC_COMPATIBLE__
++#define read_reg_v2(cmd, buffer, buffer_size)	lcm_util.dsi_dcs_read_lcm_reg_v2(cmd, buffer, buffer_size)
 +
 +static LCM_UTIL_FUNCS lcm_util;
 +
@@ -45518,170 +45496,170 @@ index 00000000..2df9f0ea
 +	unsigned char para_list[64];
 +};
 +
-+static struct LCM_setting_table lcm_initialization_setting1[] = {
-+	{0xFF, 3, {0x98, 0x81, 0x03}},
-+	{0x01, 1, {0x08}},
-+	{0x02, 1, {0x00}},
-+	{0x03, 1, {0x73}},
-+	{0x04, 1, {0x73}},
-+	{0x05, 1, {0x14}},
-+	{0x06, 1, {0x06}},
-+	{0x07, 1, {0x02}},
-+	{0x08, 1, {0x05}},
-+	{0x09, 1, {0x00}},
-+	{0x0a, 1, {0x0c}},
-+	{0x0b, 1, {0x00}},
-+	{0x0c, 1, {0x1c}},
-+	{0x0d, 1, {0x1c}},
-+	{0x0e, 1, {0x00}},
-+	{0x0f, 1, {0x0c}},
-+	{0x10, 1, {0x0c}},
-+	{0x11, 1, {0x01}},
-+	{0x12, 1, {0x01}},
-+	{0x13, 1, {0x1b}},
-+	{0x14, 1, {0x0b}},
-+	{0x15, 1, {0x00}},
-+	{0x16, 1, {0x00}},
-+	{0x17, 1, {0x00}},
-+	{0x18, 1, {0x00}},
-+	{0x19, 1, {0x00}},
-+	{0x1a, 1, {0x00}},
-+	{0x1b, 1, {0x00}},
-+	{0x1c, 1, {0x00}},
-+	{0x1d, 1, {0x00}},
-+	{0x1e, 1, {0xC8}},
-+	{0x1f, 1, {0x80}},
-+	{0x20, 1, {0x02}},
-+	{0x21, 1, {0x00}},
-+	{0x22, 1, {0x02}},
-+	{0x23, 1, {0x00}},
-+	{0x24, 1, {0x00}},
-+	{0x25, 1, {0x00}},
-+	{0x26, 1, {0x00}},
-+	{0x27, 1, {0x00}},
++static struct LCM_setting_table lcm_initialization_setting[] = {
++	{0xFF, 3, {0x98, 0x81, 0x3}},
++	{0x1, 1, {0x8}},
++	{0x2, 1, {0x0}},
++	{0x3, 1, {0x73}},
++	{0x4, 1, {0x73}},
++	{0x5, 1, {0x14}},
++	{0x6, 1, {0x6}},
++	{0x7, 1, {0x2}},
++	{0x8, 1, {0x5}},
++	{0x9, 1, {0x0}},
++	{0xA, 1, {0xC}},
++	{0xB, 1, {0x0}},
++	{0xC, 1, {0x1C}},
++	{0xD, 1, {0x1C}},
++	{0xE, 1, {0x0}},
++	{0xF, 1, {0xC}},
++	{0x10, 1, {0xC}},
++	{0x11, 1, {0x1}},
++	{0x12, 1, {0x1}},
++	{0x13, 1, {0x1B}},
++	{0x14, 1, {0xB}},
++	{0x15, 1, {0x0}},
++	{0x16, 1, {0x0}},
++	{0x17, 1, {0x0}},
++	{0x18, 1, {0x0}},
++	{0x19, 1, {0x0}},
++	{0x1A, 1, {0x0}},
++	{0x1B, 1, {0x0}},
++	{0x1C, 1, {0x0}},
++	{0x1D, 1, {0x0}},
++	{0x1E, 1, {0xC8}},
++	{0x1F, 1, {0x80}},
++	{0x20, 1, {0x2}},
++	{0x21, 1, {0x0}},
++	{0x22, 1, {0x2}},
++	{0x23, 1, {0x0}},
++	{0x24, 1, {0x0}},
++	{0x25, 1, {0x0}},
++	{0x26, 1, {0x0}},
++	{0x27, 1, {0x0}},
 +	{0x28, 1, {0xFB}},
 +	{0x29, 1, {0x43}},
-+	{0x2a, 1, {0x00}},
-+	{0x2b, 1, {0x00}},
-+	{0x2c, 1, {0x07}},
-+	{0x2d, 1, {0x07}},
-+	{0x2e, 1, {0xFF}},
-+	{0x2f, 1, {0xFF}},
++	{0x2A, 1, {0x0}},
++	{0x2B, 1, {0x0}},
++	{0x2C, 1, {0x7}},
++	{0x2D, 1, {0x7}},
++	{0x2E, 1, {0xFF}},
++	{0x2F, 1, {0xFF}},
 +	{0x30, 1, {0x11}},
-+	{0x31, 1, {0x00}},
-+	{0x32, 1, {0x00}},
-+	{0x33, 1, {0x00}},
++	{0x31, 1, {0x0}},
++	{0x32, 1, {0x0}},
++	{0x33, 1, {0x0}},
 +	{0x34, 1, {0x84}},
 +	{0x35, 1, {0x80}},
-+	{0x36, 1, {0x07}},
-+	{0x37, 1, {0x00}},
-+	{0x38, 1, {0x00}},
-+	{0x39, 1, {0x00}},
-+	{0x3a, 1, {0x00}},
-+	{0x3b, 1, {0x00}},
-+	{0x3c, 1, {0x00}},
-+	{0x3d, 1, {0x00}},
-+	{0x3e, 1, {0x00}},
-+	{0x3f, 1, {0x00}},
-+	{0x40, 1, {0x00}},
-+	{0x41, 1, {0x00}},
-+	{0x42, 1, {0x00}},
++	{0x36, 1, {0x7}},
++	{0x37, 1, {0x0}},
++	{0x38, 1, {0x0}},
++	{0x39, 1, {0x0}},
++	{0x3A, 1, {0x0}},
++	{0x3B, 1, {0x0}},
++	{0x3C, 1, {0x0}},
++	{0x3D, 1, {0x0}},
++	{0x3E, 1, {0x0}},
++	{0x3F, 1, {0x0}},
++	{0x40, 1, {0x0}},
++	{0x41, 1, {0x0}},
++	{0x42, 1, {0x0}},
 +	{0x43, 1, {0x80}},
-+	{0x44, 1, {0x08}},
-+	{0x50, 1, {0x01}},
++	{0x44, 1, {0x8}},
++	{0x50, 1, {0x1}},
 +	{0x51, 1, {0x23}},
 +	{0x52, 1, {0x45}},
 +	{0x53, 1, {0x67}},
 +	{0x54, 1, {0x89}},
 +	{0x55, 1, {0xAB}},
-+	{0x56, 1, {0x01}},
++	{0x56, 1, {0x1}},
 +	{0x57, 1, {0x23}},
 +	{0x58, 1, {0x45}},
 +	{0x59, 1, {0x67}},
-+	{0x5a, 1, {0x89}},
-+	{0x5b, 1, {0xAB}},
-+	{0x5c, 1, {0xCD}},
-+	{0x5d, 1, {0xEF}},
-+	{0x5e, 1, {0x10}},
-+	{0x5f, 1, {0x02}},
-+	{0x60, 1, {0x02}},
-+	{0x61, 1, {0x02}},
-+	{0x62, 1, {0x02}},
-+	{0x63, 1, {0x02}},
-+	{0x64, 1, {0x02}},
-+	{0x65, 1, {0x02}},
-+	{0x66, 1, {0x08}},
-+	{0x67, 1, {0x09}},
-+	{0x68, 1, {0x02}},
++	{0x5A, 1, {0x89}},
++	{0x5B, 1, {0xAB}},
++	{0x5C, 1, {0xCD}},
++	{0x5D, 1, {0xEF}},
++	{0x5E, 1, {0x10}},
++	{0x5F, 1, {0x2}},
++	{0x60, 1, {0x2}},
++	{0x61, 1, {0x2}},
++	{0x62, 1, {0x2}},
++	{0x63, 1, {0x2}},
++	{0x64, 1, {0x2}},
++	{0x65, 1, {0x2}},
++	{0x66, 1, {0x8}},
++	{0x67, 1, {0x9}},
++	{0x68, 1, {0x2}},
 +	{0x69, 1, {0x10}},
-+	{0x6a, 1, {0x12}},
-+	{0x6b, 1, {0x11}},
-+	{0x6c, 1, {0x13}},
-+	{0x6d, 1, {0x0C}},
-+	{0x6e, 1, {0x0E}},
-+	{0x6f, 1, {0x0D}},
-+	{0x70, 1, {0x0F}},
-+	{0x71, 1, {0x06}},
-+	{0x72, 1, {0x07}},
-+	{0x73, 1, {0x02}},
-+	{0x74, 1, {0x02}},
-+	{0x75, 1, {0x02}},
-+	{0x76, 1, {0x02}},
-+	{0x77, 1, {0x02}},
-+	{0x78, 1, {0x02}},
-+	{0x79, 1, {0x02}},
-+	{0x7a, 1, {0x02}},
-+	{0x7b, 1, {0x02}},
-+	{0x7c, 1, {0x07}},
-+	{0x7d, 1, {0x06}},
-+	{0x7e, 1, {0x02}},
-+	{0x7f, 1, {0x11}},
++	{0x6A, 1, {0x12}},
++	{0x6B, 1, {0x11}},
++	{0x6C, 1, {0x13}},
++	{0x6D, 1, {0xC}},
++	{0x6E, 1, {0xE}},
++	{0x6F, 1, {0xD}},
++	{0x70, 1, {0xF}},
++	{0x71, 1, {0x6}},
++	{0x72, 1, {0x7}},
++	{0x73, 1, {0x2}},
++	{0x74, 1, {0x2}},
++	{0x75, 1, {0x2}},
++	{0x76, 1, {0x2}},
++	{0x77, 1, {0x2}},
++	{0x78, 1, {0x2}},
++	{0x79, 1, {0x2}},
++	{0x7A, 1, {0x2}},
++	{0x7B, 1, {0x2}},
++	{0x7C, 1, {0x7}},
++	{0x7D, 1, {0x6}},
++	{0x7E, 1, {0x2}},
++	{0x7F, 1, {0x11}},
 +	{0x80, 1, {0x13}},
 +	{0x81, 1, {0x10}},
 +	{0x82, 1, {0x12}},
-+	{0x83, 1, {0x0F}},
-+	{0x84, 1, {0x0D}},
-+	{0x85, 1, {0x0E}},
-+	{0x86, 1, {0x0C}},
-+	{0x87, 1, {0x09}},
-+	{0x88, 1, {0x08}},
-+	{0x89, 1, {0x02}},
-+	{0x8a, 1, {0x02}},
-+	{0xFF, 3, {0x98, 0x81, 0x04}},
++	{0x83, 1, {0xF}},
++	{0x84, 1, {0xD}},
++	{0x85, 1, {0xE}},
++	{0x86, 1, {0xC}},
++	{0x87, 1, {0x9}},
++	{0x88, 1, {0x8}},
++	{0x89, 1, {0x2}},
++	{0x8A, 1, {0x2}},
++	{0xFF, 3, {0x98, 0x81, 0x4}},
 +	{0x6C, 1, {0x15}},
 +	{0x6E, 1, {0x28}},
 +	{0x6F, 1, {0x35}},
 +	{0x3A, 1, {0xA4}},
-+	{0x8D, 1, {0x1f}},
++	{0x8D, 1, {0x1F}},
 +	{0x87, 1, {0xBA}},
 +	{0x26, 1, {0x76}},
 +	{0xB2, 1, {0xD1}},
 +	{0x69, 1, {0x57}},
 +	{0x41, 1, {0x88}},
 +	{0x33, 1, {0x44}},
-+	{0xFF, 3, {0x98, 0x81, 0x01}},
++	{0xFF, 3, {0x98, 0x81, 0x1}},
 +	{0x22, 1, {0x38}},
-+	{0x31, 1, {0x00}},
-+	{0x34, 1, {0x01}},
++	{0x31, 1, {0x0}},
++	{0x34, 1, {0x1}},
 +	{0x40, 1, {0x33}},
 +	{0x53, 1, {0x66}},
 +	{0x55, 1, {0x8F}},
 +	{0x50, 1, {0x96}},
 +	{0x51, 1, {0x96}},
 +	{0x60, 1, {0x14}},
-+	{0xA0, 1, {0x1f}},
++	{0xA0, 1, {0x1F}},
 +	{0xA1, 1, {0x37}},
 +	{0xA2, 1, {0x45}},
 +	{0xA3, 1, {0x16}},
 +	{0xA4, 1, {0x19}},
 +	{0xA5, 1, {0x2C}},
-+	{0xA6, 1, {0x1e}},
++	{0xA6, 1, {0x1E}},
 +	{0xA7, 1, {0x21}},
-+	{0xA8, 1, {0xbb}},
-+	{0xA9, 1, {0x1d}},
++	{0xA8, 1, {0xBB}},
++	{0xA9, 1, {0x1D}},
 +	{0xAA, 1, {0x29}},
 +	{0xAB, 1, {0xA0}},
-+	{0xAC, 1, {0x1c}},
++	{0xAC, 1, {0x1C}},
 +	{0xAD, 1, {0x19}},
 +	{0xAE, 1, {0x4D}},
 +	{0xAF, 1, {0x22}},
@@ -45689,52 +45667,52 @@ index 00000000..2df9f0ea
 +	{0xB1, 1, {0x56}},
 +	{0xB2, 1, {0x63}},
 +	{0xB3, 1, {0x39}},
-+	{0xC0, 1, {0x00}},
++	{0xC0, 1, {0x0}},
 +	{0xC1, 1, {0x36}},
 +	{0xC2, 1, {0x46}},
 +	{0xC3, 1, {0x15}},
-+	{0xC4, 1, {0x1a}},
-+	{0xC5, 1, {0x2b}},
++	{0xC4, 1, {0x1A}},
++	{0xC5, 1, {0x2B}},
 +	{0xC6, 1, {0x21}},
 +	{0xC7, 1, {0x1F}},
-+	{0xC8, 1, {0xbb}},
-+	{0xC9, 1, {0x1d}},
++	{0xC8, 1, {0xBB}},
++	{0xC9, 1, {0x1D}},
 +	{0xCA, 1, {0x29}},
-+	{0xCB, 1, {0x9f}},
-+	{0xCC, 1, {0x1b}},
++	{0xCB, 1, {0x9F}},
++	{0xCC, 1, {0x1B}},
 +	{0xCD, 1, {0x19}},
-+	{0xCE, 1, {0x4d}},
++	{0xCE, 1, {0x4D}},
 +	{0xCF, 1, {0x22}},
 +	{0xD0, 1, {0x27}},
 +	{0xD1, 1, {0x57}},
 +	{0xD2, 1, {0x64}},
 +	{0xD3, 1, {0x39}},
-+	{0xFF, 3, {0x98, 0x81, 0x00}},
-+	{0x36, 1, {0x01}},
-+	{0x35, 1, {0x00}},
-+	{0x11, 1, {0x00}},
++	{0xFF, 3, {0x98, 0x81, 0x0}},
++	{0x36, 1, {0x1}},
++	{0x35, 1, {0x0}},
++	{0x11, 1, {0x0}},
 +	{REGFLAG_DELAY, 120, {}},
-+	{0x29, 1, {0x00}},
++	{0x29, 1, {0x0}},
 +	{REGFLAG_DELAY, 20, {}},
++	{REGFLAG_END_OF_TABLE, 0x0, {}}
 +};
 +
 +static struct LCM_setting_table lcm_deep_sleep_mode_in_setting[] = {
 +	// Sleep mode off
-+	{0x28, 1, {0x00}},
++	{0x28, 1, {0x0}},
 +	{REGFLAG_DELAY, 20, {}},
 +
 +	// Sleep mode on
-+	{0x10, 1, {0x00}},
++	{0x10, 1, {0x0}},
 +	{REGFLAG_DELAY, 120, {}},
-+	{REGFLAG_END_OF_TABLE, 0x00, {}}
++	{REGFLAG_END_OF_TABLE, 0x0, {}}
 +};
 +
 +static void push_table(struct LCM_setting_table *table, unsigned int count, unsigned char force_update)
 +{
 +	unsigned int i;
 +
-+	for(i = 0; i < count; i++)
-+	{
++	for (i = 0; i < count; i++) {
 +		unsigned cmd;
 +		cmd = table[i].cmd;
 +
@@ -45758,45 +45736,45 @@ index 00000000..2df9f0ea
 +static void lcm_get_params(LCM_PARAMS *params)
 +{
 +	memset(params, 0, sizeof(LCM_PARAMS));
-+	params->type = LCM_TYPE_DSI;
-+	params->width = FRAME_WIDTH;
-+	params->height = FRAME_HEIGHT;
-+	params->dbi.te_mode = LCM_DBI_TE_MODE_VSYNC_ONLY;
 +	params->dbi.te_edge_polarity = LCM_POLARITY_RISING;
-+	params->dsi.cont_clock = 1;
-+	params->dsi.mode = SYNC_PULSE_VDO_MODE;
-+	params->dsi.LANE_NUM = LCM_FOUR_LANE;
-+	params->dsi.data_format.color_order = LCM_COLOR_ORDER_RGB;
-+	params->dsi.data_format.trans_seq = LCM_DSI_TRANS_SEQ_MSB_FIRST;
-+	params->dsi.data_format.padding = LCM_DSI_PADDING_ON_LSB;
-+	params->dsi.data_format.format = LCM_DSI_FORMAT_RGB888;
-+	params->dsi.intermediat_buffer_num = 2;
-+	params->dsi.PS = LCM_PACKED_PS_24BIT_RGB888;
-+	params->dsi.packet_size = 256;
-+	params->dsi.vertical_sync_active = 8;
-+	params->dsi.vertical_backporch = 24;
-+	params->dsi.vertical_frontporch = 16;
-+	params->dsi.vertical_active_line = FRAME_HEIGHT;
-+	params->dsi.horizontal_sync_active = 60;
-+	params->dsi.horizontal_backporch = 80;
-+	params->dsi.horizontal_frontporch = 80;
-+	params->dsi.horizontal_blanking_pixel = 60;
-+	params->dsi.horizontal_active_pixel = FRAME_WIDTH;
-+	params->dsi.ssc_disable = 1;
-+	params->dsi.PLL_CLOCK = 207;
++	params->dbi.te_mode = LCM_DBI_TE_MODE_VSYNC_ONLY;
 +	params->dsi.HS_TRAIL = 10;
-+	params->dsi.esd_check_enable = 1;
++	params->dsi.LANE_NUM = LCM_FOUR_LANE;
++	params->dsi.PLL_CLOCK = 207;
++	params->dsi.PS = LCM_PACKED_PS_24BIT_RGB888;
++	params->dsi.cont_clock = 1;
 +	params->dsi.customization_esd_check_enable = 1;
-+	params->dsi.lcm_esd_check_table[0].cmd = 0x0a;
++	params->dsi.data_format.color_order = LCM_COLOR_ORDER_RGB;
++	params->dsi.data_format.format = LCM_DSI_FORMAT_RGB888;
++	params->dsi.data_format.padding = LCM_DSI_PADDING_ON_LSB;
++	params->dsi.data_format.trans_seq = LCM_DSI_TRANS_SEQ_MSB_FIRST;
++	params->dsi.esd_check_enable = 1;
++	params->dsi.horizontal_active_pixel = FRAME_WIDTH;
++	params->dsi.horizontal_backporch = 80;
++	params->dsi.horizontal_blanking_pixel = 60;
++	params->dsi.horizontal_frontporch = 80;
++	params->dsi.horizontal_sync_active = 60;
++	params->dsi.intermediat_buffer_num = 2;
++	params->dsi.lcm_esd_check_table[0].cmd = 0xA;
 +	params->dsi.lcm_esd_check_table[0].count = 1;
 +	params->dsi.lcm_esd_check_table[0].para_list[0] = 0x9C;
++	params->dsi.mode = SYNC_PULSE_VDO_MODE;
++	params->dsi.packet_size = 256;
++	params->dsi.ssc_disable = 1;
++	params->dsi.vertical_active_line = FRAME_HEIGHT;
++	params->dsi.vertical_backporch = 24;
++	params->dsi.vertical_frontporch = 16;
++	params->dsi.vertical_sync_active = 8;
++	params->height = FRAME_HEIGHT;
++	params->type = LCM_TYPE_DSI;
++	params->width = FRAME_WIDTH;
 +}
 +
 +static void lcm_init(void)
 +{
 +	unsigned char cmd = 0x0;
 +	unsigned char data = 0xFF;
-+	cmd = 0x03;
++	cmd = 0x3;
 +	data = 0x0;
 +
 +	mt_set_gpio_mode(GPIO_LCM_PWR_EN, GPIO_MODE_00);
@@ -45811,7 +45789,7 @@ index 00000000..2df9f0ea
 +	SET_RESET_PIN(1);
 +	MDELAY(120);
 +
-+	push_table(lcm_initialization_setting1, sizeof(lcm_initialization_setting1) / sizeof(struct LCM_setting_table), 1);
++	push_table(lcm_initialization_setting, sizeof(lcm_initialization_setting) / sizeof(struct LCM_setting_table), 1);
 +}
 +
 +static void lcm_suspend(void)
@@ -45846,32 +45824,29 @@ index 00000000..2df9f0ea
 +	SET_RESET_PIN(1);
 +	MDELAY(120);
 +
-+	array[0] = 0x00053902;
++	array[0] = 0x53902;
 +	array[1] = 0x8198FFFF;
-+	array[2] = 0x00000001;
++	array[2] = 0x1;
 +	dsi_set_cmdq(array, 3, 1);
 +	MDELAY(10);
 +
-+	array[0] = 0x00023700;
++	array[0] = 0x23700;
 +	dsi_set_cmdq(array, 1, 1);
 +	MDELAY(10);
 +
-+	read_reg_v2(0x00, buffer, 1);
++	read_reg_v2(0x0, buffer, 1);
 +	id1 = buffer[0];
 +
-+	read_reg_v2(0x01, buffer, 1);
++	read_reg_v2(0x1, buffer, 1);
 +	id2 = buffer[1];
 +
 +	id2 = buffer[1];
 +	id = (id1 << 8) | id2;
 +
-+	pr_info("%s, id of ili9881 = 0x%08x\n", __func__, id);
-+
-+	if(id == LCM_ID_ILI9881) {
++	if (id == LCM_ID_ILI9881)
 +		return 1;
-+	} else {
++	else
 +		return 0;
-+	}
 +}
 +
 +static unsigned int lcm_esd_check(void)
@@ -45879,20 +45854,18 @@ index 00000000..2df9f0ea
 +	unsigned char buffer[8] = {0};
 +	unsigned int array[4];
 +
-+	array[0] = 0x00013700;
++	array[0] = 0x13700;
 +	dsi_set_cmdq(array, 1, 1);
-+	read_reg_v2(0x0A, buffer, 8);
++	read_reg_v2(0xA, buffer, 8);
 +
-+	if((buffer[0] != 0x9C)) {
++	if (buffer[0] != 0x9C)
 +		return 1;
-+	} else {
++	else
 +		return 0;
-+	}
 +}
 +
 +static unsigned int lcm_esd_recover(void)
 +{
-+	printk("ili9881 lcm_esd_recover\n");
 +	lcm_init();
 +	return 1;
 +}
@@ -45906,10 +45879,10 @@ index 00000000..2df9f0ea
 +	.resume = lcm_resume,
 +	.compare_id = lcm_compare_id,
 +	.esd_check = lcm_esd_check,
-+	.esd_recover = lcm_esd_recover,
++	.esd_recover = lcm_esd_recover
 +};
 diff --git a/drivers/misc/mediatek/lcm/mt65xx_lcm_list.c b/drivers/misc/mediatek/lcm/mt65xx_lcm_list.c
-index f6562421..22ec084c 100644
+index f6562421ba1..22ec084c58a 100644
 --- a/drivers/misc/mediatek/lcm/mt65xx_lcm_list.c
 +++ b/drivers/misc/mediatek/lcm/mt65xx_lcm_list.c
 @@ -40,10 +40,19 @@ LCM_DRIVER *lcm_driver_list[] = {
@@ -45933,7 +45906,7 @@ index f6562421..22ec084c 100644
  	&nt35595_fhd_dsi_cmd_truly_8163_lcm_drv,
  #endif
 diff --git a/drivers/misc/mediatek/lcm/mt65xx_lcm_list.h b/drivers/misc/mediatek/lcm/mt65xx_lcm_list.h
-index 3470e700..72a89ffb 100644
+index 3470e700c42..72a89ffbe64 100644
 --- a/drivers/misc/mediatek/lcm/mt65xx_lcm_list.h
 +++ b/drivers/misc/mediatek/lcm/mt65xx_lcm_list.h
 @@ -191,7 +191,9 @@ extern LCM_DRIVER it6151_edp_dsi_video_sharp_lcm_drv;
@@ -45948,73 +45921,40 @@ index 3470e700..72a89ffb 100644
  extern LCM_DRIVER tf070mc_rgb_v18_mt6571_lcm_drv;
 diff --git a/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_by/Makefile b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_by/Makefile
 new file mode 100644
-index 00000000..2fb87e81
+index 00000000000..3d48210e808
 --- /dev/null
 +++ b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_by/Makefile
-@@ -0,0 +1,20 @@
-+#
-+# Copyright (C) 2015 MediaTek Inc.
-+#
-+# This program is free software: you can redistribute it and/or modify
-+# it under the terms of the GNU General Public License version 2 as
-+# published by the Free Software Foundation.
-+#
-+# This program is distributed in the hope that it will be useful,
-+# but WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+# GNU General Public License for more details.
-+#
-+
-+#
-+# Makefile for misc devices that really don't fit anywhere else.
-+#
-+
+@@ -0,0 +1,2 @@
 +obj-y += otm1285a_hd720_dsi_vdo_by.o
-+
 +ccflags-$(CONFIG_MTK_LCM) += -I$(srctree)/drivers/misc/mediatek/lcm/inc
 diff --git a/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_by/otm1285a_hd720_dsi_vdo_by.c b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_by/otm1285a_hd720_dsi_vdo_by.c
 new file mode 100644
-index 00000000..375ae309
+index 00000000000..bf5a6893ae1
 --- /dev/null
 +++ b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_by/otm1285a_hd720_dsi_vdo_by.c
-@@ -0,0 +1,398 @@
-+/*
-+ * Copyright (C) 2015 MediaTek Inc.
-+ *
-+ * This program is free software: you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ */
-+
+@@ -0,0 +1,380 @@
 +#include <mt-plat/mt_gpio.h>
 +#include <mach/gpio_const.h>
 +#include <linux/string.h>
 +#include "lcm_drv.h"
 +
-+#define LCM_ID_OTM1285						0x40
-+#define LCM_ID_OTM1285_OTP					0xb1
++#define LCM_ID_OTM1285	0x40
++#define LCM_ID_OTM1285_OTP	0xB1
 +
-+#define FRAME_WIDTH						(720)
-+#define FRAME_HEIGHT						(1280)
++#define FRAME_HEIGHT	(1280)
++#define FRAME_WIDTH	(720)
 +
-+#define REGFLAG_DELAY						0xFC
-+#define REGFLAG_END_OF_TABLE					0xFD
++#define REGFLAG_DELAY	0xFC
++#define REGFLAG_END_OF_TABLE	0xFD
 +
-+#define GPIO_LCM_PWR_EN						(GPIO119 | 0x80000000)
++#define GPIO_LCM_PWR_EN	(GPIO119 | 0x80000000)
 +
-+#define SET_RESET_PIN(v)					(lcm_util.set_reset_pin((v)))
-+#define MDELAY(n) 						(lcm_util.mdelay(n))
++#define MDELAY(n)	(lcm_util.mdelay(n))
++#define SET_RESET_PIN(v)	(lcm_util.set_reset_pin((v)))
 +
++#define dsi_set_cmdq(pdata, queue_size, force_update)	lcm_util.dsi_set_cmdq(pdata, queue_size, force_update)
 +#define dsi_set_cmdq_V2(cmd, count, ppara, force_update)	lcm_util.dsi_set_cmdq_V2(cmd, count, ppara, force_update)
-+#define dsi_set_cmdq(pdata, queue_size, force_update)		lcm_util.dsi_set_cmdq(pdata, queue_size, force_update)
-+#define read_reg_v2(cmd, buffer, buffer_size)			lcm_util.dsi_dcs_read_lcm_reg_v2(cmd, buffer, buffer_size)
-+
-+#define __SAME_IC_COMPATIBLE__
++#define read_reg_v2(cmd, buffer, buffer_size)	lcm_util.dsi_dcs_read_lcm_reg_v2(cmd, buffer, buffer_size)
 +
 +static unsigned char lcd_type_id = 0;
 +
@@ -46027,221 +45967,221 @@ index 00000000..375ae309
 +};
 +
 +static struct LCM_setting_table lcm_initialization_setting_otp[] = {
-+	{0x00, 1, {0x00}},
-+	{0xff, 3, {0x12, 0x85, 0x01}},
-+	{0x00, 1, {0x80}},
-+	{0xff, 2, {0x12, 0x85}},
-+	{0x00, 1, {0x80}},
-+	{0xc0, 2, {0x00, 0x7F}},
-+	{0x00, 1, {0x82}},
-+	{0xc0, 3, {0x00, 0x0c, 0x08}},
-+	{0x00, 1, {0x90}},
-+	{0xc1, 1, {0x55}},
-+	{0x00, 1, {0xB3}},
-+	{0xc0, 1, {0x33}},
-+	{0x00, 1, {0x80}},
-+	{0xc1, 4, {0x11, 0x11, 0x11, 0x11}},
-+	{0x00, 1, {0x90}},
-+	{0xc2, 10, {0x86, 0x20, 0x00, 0x0F, 0x00, 0x87, 0x20, 0x00, 0x0F, 0x00}},
-+	{0x00, 1, {0xec}},
-+	{0xc2, 1, {0x00}},
-+	{0x00, 1, {0x80}},
-+	{0xc2, 4, {0x82, 0x01, 0x08, 0x08}},
-+	{0x00, 1, {0xa0}},
-+	{0xc0, 7, {0x00, 0x0f, 0x00, 0x00, 0x0a, 0x1A, 0x00}},
-+	{0x00, 1, {0xfb}},
-+	{0xc2, 1, {0x80}},
-+	{0x00, 1, {0x80}},
-+	{0xcc, 12, {0x03, 0x04, 0x01, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b}},
-+	{0x00, 1, {0xb0}},
-+	{0xcc, 12, {0x04, 0x03, 0x01, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b}},
-+	{0x00, 1, {0x80}},
-+	{0xcd, 15, {0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x15, 0x0B, 0x0b, 0x12, 0x13, 0x14, 0x0b, 0x0b, 0x0b}},
-+	{0x00, 1, {0xc0}},
-+	{0xcb, 15, {0x05, 0x05, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
-+	{0x00, 1, {0xd0}},
-+	{0xcb, 15, {0x00, 0x00, 0x00, 0x0A, 0x05, 0x00, 0x05, 0x05, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
-+	{0x00, 1, {0xe0}},
-+	{0xcc, 4, {0x00, 0x00, 0x00, 0x00}},
-+	{0x00, 1, {0xd0}},
-+	{0xcd, 15, {0x01, 0x02, 0x04, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f}},
-+	{0x00, 1, {0xe0}},
-+	{0xcd, 12, {0x10, 0x11, 0x12, 0x13, 0x03, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b}},
-+	{0x00, 1, {0xa0}},
-+	{0xcd, 15, {0x01, 0x02, 0x04, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f}},
-+	{0x00, 1, {0xb0}},
-+	{0xcd, 12, {0x10, 0x11, 0x12, 0x13, 0x03, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b}},
-+	{0x00, 1, {0x00}},
++	{0x0, 1, {0x0}},
++	{0xFF, 3, {0x12, 0x85, 0x1}},
++	{0x0, 1, {0x80}},
++	{0xFF, 2, {0x12, 0x85}},
++	{0x0, 1, {0x80}},
++	{0xC0, 2, {0x0, 0x7F}},
++	{0x0, 1, {0x82}},
++	{0xC0, 3, {0x0, 0xC, 0x8}},
++	{0x0, 1, {0x90}},
++	{0xC1, 1, {0x55}},
++	{0x0, 1, {0xB3}},
++	{0xC0, 1, {0x33}},
++	{0x0, 1, {0x80}},
++	{0xC1, 4, {0x11, 0x11, 0x11, 0x11}},
++	{0x0, 1, {0x90}},
++	{0xC2, 10, {0x86, 0x20, 0x0, 0xF, 0x0, 0x87, 0x20, 0x0, 0xF, 0x0}},
++	{0x0, 1, {0xEC}},
++	{0xC2, 1, {0x0}},
++	{0x0, 1, {0x80}},
++	{0xC2, 4, {0x82, 0x1, 0x8, 0x8}},
++	{0x0, 1, {0xA0}},
++	{0xC0, 7, {0x0, 0xF, 0x0, 0x0, 0xA, 0x1A, 0x0}},
++	{0x0, 1, {0xFB}},
++	{0xC2, 1, {0x80}},
++	{0x0, 1, {0x80}},
++	{0xCC, 12, {0x3, 0x4, 0x1, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB}},
++	{0x0, 1, {0xB0}},
++	{0xCC, 12, {0x4, 0x3, 0x1, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB}},
++	{0x0, 1, {0x80}},
++	{0xCD, 15, {0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0x15, 0xB, 0xB, 0x12, 0x13, 0x14, 0xB, 0xB, 0xB}},
++	{0x0, 1, {0xC0}},
++	{0xCB, 15, {0x5, 0x5, 0x5, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}},
++	{0x0, 1, {0xD0}},
++	{0xCB, 15, {0x0, 0x0, 0x0, 0xA, 0x5, 0x0, 0x5, 0x5, 0x5, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}},
++	{0x0, 1, {0xE0}},
++	{0xCC, 4, {0x0, 0x0, 0x0, 0x0}},
++	{0x0, 1, {0xD0}},
++	{0xCD, 15, {0x1, 0x2, 0x4, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF}},
++	{0x0, 1, {0xE0}},
++	{0xCD, 12, {0x10, 0x11, 0x12, 0x13, 0x3, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B}},
++	{0x0, 1, {0xA0}},
++	{0xCD, 15, {0x1, 0x2, 0x4, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF}},
++	{0x0, 1, {0xB0}},
++	{0xCD, 12, {0x10, 0x11, 0x12, 0x13, 0x3, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B}},
++	{0x0, 1, {0x0}},
 +	{0xD8, 2, {0x34, 0x34}},
-+	{0x00, 1, {0x90}},
-+	{0xC5, 6, {0xB2, 0xD6, 0xA0, 0x0F, 0xA0, 0x14}},
-+	{0x00, 1, {0x96}},
-+	{0xc5, 4, {0xa0, 0x0d, 0xaa, 0x0c}},
-+	{0x00, 1, {0xc2}},
-+	{0xc5, 1, {0x08}},
-+	{0x00, 1, {0xA8}},
-+	{0xc4, 1, {0x11}},
-+	{0x00, 1, {0xc1}},
-+	{0xc5, 1, {0x33}},
-+	{0x00, 1, {0xa3}},
-+	{0xc5, 1, {0x0f}},
-+	{0x00, 1, {0xa5}},
-+	{0xc5, 5, {0x0f, 0xa0, 0x0d, 0xaa, 0x0c}},
-+	{0x00, 1, {0x90}},
-+	{0xf5, 14, {0x03, 0x15, 0x09, 0x15, 0x07, 0x15, 0x0c, 0x15, 0x0a, 0x15, 0x09, 0x15, 0x0a, 0x15}},
-+	{0x00, 1, {0xa0}},
-+	{0xf5, 14, {0x12, 0x11, 0x03, 0x15, 0x09, 0x15, 0x11, 0x15, 0x08, 0x15, 0x07, 0x15, 0x09, 0x15}},
-+	{0x00, 1, {0xc0}},
-+	{0xf5, 14, {0x0e, 0x15, 0x0e, 0x15, 0x00, 0x15, 0x00, 0x15, 0x0e, 0x15, 0x14, 0x11, 0x00, 0x15}},
-+	{0x00, 1, {0xd0}},
-+	{0xf5, 15, {0x07, 0x15, 0x0a, 0x15, 0x10, 0x11, 0x00, 0x10, 0x90, 0x90, 0x90, 0x02, 0x90, 0x00, 0x00}},
-+	{0x00, 1, {0x80}},
-+	{0xC4, 1, {0x00}},
-+	{0x00, 1, {0x81}},
++	{0x0, 1, {0x90}},
++	{0xC5, 6, {0xB2, 0xD6, 0xA0, 0xF, 0xA0, 0x14}},
++	{0x0, 1, {0x96}},
++	{0xC5, 4, {0xA0, 0xD, 0xAA, 0xC}},
++	{0x0, 1, {0xC2}},
++	{0xC5, 1, {0x8}},
++	{0x0, 1, {0xA8}},
++	{0xC4, 1, {0x11}},
++	{0x0, 1, {0xC1}},
++	{0xC5, 1, {0x33}},
++	{0x0, 1, {0xA3}},
++	{0xC5, 1, {0xF}},
++	{0x0, 1, {0xA5}},
++	{0xC5, 5, {0xF, 0xA0, 0xD, 0xAA, 0xC}},
++	{0x0, 1, {0x90}},
++	{0xF5, 14, {0x3, 0x15, 0x9, 0x15, 0x7, 0x15, 0xC, 0x15, 0xA, 0x15, 0x9, 0x15, 0xA, 0x15}},
++	{0x0, 1, {0xA0}},
++	{0xF5, 14, {0x12, 0x11, 0x3, 0x15, 0x9, 0x15, 0x11, 0x15, 0x8, 0x15, 0x7, 0x15, 0x9, 0x15}},
++	{0x0, 1, {0xC0}},
++	{0xF5, 14, {0xE, 0x15, 0xE, 0x15, 0x0, 0x15, 0x0, 0x15, 0xE, 0x15, 0x14, 0x11, 0x0, 0x15}},
++	{0x0, 1, {0xD0}},
++	{0xF5, 15, {0x7, 0x15, 0xA, 0x15, 0x10, 0x11, 0x0, 0x10, 0x90, 0x90, 0x90, 0x2, 0x90, 0x0, 0x0}},
++	{0x0, 1, {0x80}},
++	{0xC4, 1, {0x0}},
++	{0x0, 1, {0x81}},
 +	{0xC4, 1, {0x24}},
-+	{0x00, 1, {0x9D}},
++	{0x0, 1, {0x9D}},
 +	{0xC5, 1, {0xAA}},
-+	{0x00, 1, {0x92}},
++	{0x0, 1, {0x92}},
 +	{0xE9, 1, {0x10}},
-+	{0x00, 1, {0x00}},
-+	{0xE1, 24, {0x76, 0x79, 0x7b, 0x7e, 0x81, 0x85, 0x8a, 0x94, 0x96, 0xa2, 0xa8, 0xac, 0x50, 0x4d, 0x4d, 0x41, 0x35, 0x26, 0x1e, 0x18, 0x12, 0x0a, 0x06, 0x01}},
-+	{0x00, 1, {0x00}},
-+	{0xE2, 24, {0x76, 0x79, 0x7b, 0x7e, 0x81, 0x85, 0x8a, 0x94, 0x96, 0xa2, 0xa8, 0xac, 0x50, 0x4d, 0x4d, 0x41, 0x35, 0x26, 0x1e, 0x18, 0x12, 0x0a, 0x06, 0x01}},
-+	{0x00, 1, {0x00}},
-+	{0xE3, 24, {0x76, 0x79, 0x7b, 0x7e, 0x81, 0x85, 0x8a, 0x94, 0x96, 0xa2, 0xa8, 0xac, 0x50, 0x4d, 0x4d, 0x41, 0x35, 0x26, 0x1e, 0x18, 0x12, 0x0a, 0x06, 0x01}},
-+	{0x00, 1, {0x00}},
-+	{0xE4, 24, {0x76, 0x79, 0x7b, 0x7e, 0x81, 0x85, 0x8a, 0x94, 0x96, 0xa2, 0xa8, 0xac, 0x50, 0x4d, 0x4d, 0x41, 0x35, 0x26, 0x1e, 0x18, 0x12, 0x0a, 0x06, 0x01}},
-+	{0x00, 1, {0x00}},
-+	{0xE5, 24, {0x76, 0x79, 0x7b, 0x7e, 0x81, 0x85, 0x8a, 0x94, 0x96, 0xa2, 0xa8, 0xac, 0x50, 0x4d, 0x4d, 0x41, 0x35, 0x26, 0x1e, 0x18, 0x12, 0x0a, 0x06, 0x01}},
-+	{0x00, 1, {0x00}},
-+	{0xE6, 24, {0x76, 0x79, 0x7b, 0x7e, 0x81, 0x85, 0x8a, 0x94, 0x96, 0xa2, 0xa8, 0xac, 0x50, 0x4d, 0x4d, 0x41, 0x35, 0x26, 0x1e, 0x18, 0x12, 0x0a, 0x06, 0x01}},
-+	{0x00, 1, {0x00}},
-+	{0xff, 3, {0x00, 0x00, 0x00}},
-+	{0x36, 1, {0x01}},
-+	{0x11, 1, {0x00}},
++	{0x0, 1, {0x0}},
++	{0xE1, 24, {0x76, 0x79, 0x7B, 0x7E, 0x81, 0x85, 0x8A, 0x94, 0x96, 0xA2, 0xA8, 0xAC, 0x50, 0x4D, 0x4D, 0x41, 0x35, 0x26, 0x1E, 0x18, 0x12, 0xA, 0x6, 0x1}},
++	{0x0, 1, {0x0}},
++	{0xE2, 24, {0x76, 0x79, 0x7B, 0x7E, 0x81, 0x85, 0x8A, 0x94, 0x96, 0xA2, 0xA8, 0xAC, 0x50, 0x4D, 0x4D, 0x41, 0x35, 0x26, 0x1E, 0x18, 0x12, 0xA, 0x6, 0x1}},
++	{0x0, 1, {0x0}},
++	{0xE3, 24, {0x76, 0x79, 0x7B, 0x7E, 0x81, 0x85, 0x8A, 0x94, 0x96, 0xA2, 0xA8, 0xAC, 0x50, 0x4D, 0x4D, 0x41, 0x35, 0x26, 0x1E, 0x18, 0x12, 0xA, 0x6, 0x1}},
++	{0x0, 1, {0x0}},
++	{0xE4, 24, {0x76, 0x79, 0x7B, 0x7E, 0x81, 0x85, 0x8A, 0x94, 0x96, 0xA2, 0xA8, 0xAC, 0x50, 0x4D, 0x4D, 0x41, 0x35, 0x26, 0x1E, 0x18, 0x12, 0xA, 0x6, 0x1}},
++	{0x0, 1, {0x0}},
++	{0xE5, 24, {0x76, 0x79, 0x7B, 0x7E, 0x81, 0x85, 0x8A, 0x94, 0x96, 0xA2, 0xA8, 0xAC, 0x50, 0x4D, 0x4D, 0x41, 0x35, 0x26, 0x1E, 0x18, 0x12, 0xA, 0x6, 0x1}},
++	{0x0, 1, {0x0}},
++	{0xE6, 24, {0x76, 0x79, 0x7B, 0x7E, 0x81, 0x85, 0x8A, 0x94, 0x96, 0xA2, 0xA8, 0xAC, 0x50, 0x4D, 0x4D, 0x41, 0x35, 0x26, 0x1E, 0x18, 0x12, 0xA, 0x6, 0x1}},
++	{0x0, 1, {0x0}},
++	{0xFF, 3, {0x0, 0x0, 0x0}},
++	{0x36, 1, {0x1}},
++	{0x11, 1, {0x0}},
 +	{REGFLAG_DELAY, 120, {}},
-+	{0x29, 1, {0x00}},
++	{0x29, 1, {0x0}},
 +	{REGFLAG_DELAY, 20, {}},
-+	{REGFLAG_END_OF_TABLE, 0x00, {}}
++	{REGFLAG_END_OF_TABLE, 0x0, {}}
 +};
 +
 +static struct LCM_setting_table lcm_initialization_setting[] = {
-+	{0x00, 1, {0x00}},
-+	{0xff, 3, {0x12, 0x85, 0x01}},
-+	{0x00, 1, {0x80}},
-+	{0xff, 2, {0x12, 0x85}},
-+	{0x00, 1, {0x80}},
-+	{0xc0, 2, {0x00, 0x7F}},
-+	{0x00, 1, {0x82}},
-+	{0xc0, 3, {0x00, 0x0c, 0x08}},
-+	{0x00, 1, {0x90}},
-+	{0xc1, 1, {0x55}},
-+	{0x00, 1, {0xB3}},
-+	{0xc0, 1, {0x33}},
-+	{0x00, 1, {0x80}},
-+	{0xc1, 4, {0x11, 0x11, 0x11, 0x11}},
-+	{0x00, 1, {0x90}},
-+	{0xc2, 10, {0x86, 0x20, 0x00, 0x0F, 0x00, 0x87, 0x20, 0x00, 0x0F, 0x00}},
-+	{0x00, 1, {0xec}},
-+	{0xc2, 1, {0x00}},
-+	{0x00, 1, {0x80}},
-+	{0xc2, 4, {0x82, 0x01, 0x08, 0x08}},
-+	{0x00, 1, {0xa0}},
-+	{0xc0, 7, {0x00, 0x0f, 0x00, 0x00, 0x0a, 0x1A, 0x00}},
-+	{0x00, 1, {0xfb}},
-+	{0xc2, 1, {0x80}},
-+	{0x00, 1, {0x80}},
-+	{0xcc, 12, {0x03, 0x04, 0x01, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b}},
-+	{0x00, 1, {0xb0}},
-+	{0xcc, 12, {0x04, 0x03, 0x01, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b}},
-+	{0x00, 1, {0x80}},
-+	{0xcd, 15, {0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x15, 0x0B, 0x0b, 0x12, 0x13, 0x14, 0x0b, 0x0b, 0x0b}},
-+	{0x00, 1, {0xc0}},
-+	{0xcb, 15, {0x05, 0x05, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
-+	{0x00, 1, {0xd0}},
-+	{0xcb, 15, {0x00, 0x00, 0x00, 0x0A, 0x05, 0x00, 0x05, 0x05, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
-+	{0x00, 1, {0xe0}},
-+	{0xcc, 4, {0x00, 0x00, 0x00, 0x00}},
-+	{0x00, 1, {0xd0}},
-+	{0xcd, 15, {0x01, 0x02, 0x04, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f}},
-+	{0x00, 1, {0xe0}},
-+	{0xcd, 12, {0x10, 0x11, 0x12, 0x13, 0x03, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b}},
-+	{0x00, 1, {0xa0}},
-+	{0xcd, 15, {0x01, 0x02, 0x04, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f}},
-+	{0x00, 1, {0xb0}},
-+	{0xcd, 12, {0x10, 0x11, 0x12, 0x13, 0x03, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b}},
-+	{0x00, 1, {0x00}},
++	{0x0, 1, {0x0}},
++	{0xFF, 3, {0x12, 0x85, 0x1}},
++	{0x0, 1, {0x80}},
++	{0xFF, 2, {0x12, 0x85}},
++	{0x0, 1, {0x80}},
++	{0xC0, 2, {0x0, 0x7F}},
++	{0x0, 1, {0x82}},
++	{0xC0, 3, {0x0, 0xC, 0x8}},
++	{0x0, 1, {0x90}},
++	{0xC1, 1, {0x55}},
++	{0x0, 1, {0xB3}},
++	{0xC0, 1, {0x33}},
++	{0x0, 1, {0x80}},
++	{0xC1, 4, {0x11, 0x11, 0x11, 0x11}},
++	{0x0, 1, {0x90}},
++	{0xC2, 10, {0x86, 0x20, 0x0, 0xF, 0x0, 0x87, 0x20, 0x0, 0xF, 0x0}},
++	{0x0, 1, {0xEC}},
++	{0xC2, 1, {0x0}},
++	{0x0, 1, {0x80}},
++	{0xC2, 4, {0x82, 0x1, 0x8, 0x8}},
++	{0x0, 1, {0xA0}},
++	{0xC0, 7, {0x0, 0xF, 0x0, 0x0, 0xA, 0x1A, 0x0}},
++	{0x0, 1, {0xFB}},
++	{0xC2, 1, {0x80}},
++	{0x0, 1, {0x80}},
++	{0xCC, 12, {0x3, 0x4, 0x1, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB}},
++	{0x0, 1, {0xB0}},
++	{0xCC, 12, {0x4, 0x3, 0x1, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB}},
++	{0x0, 1, {0x80}},
++	{0xCD, 15, {0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0x15, 0xB, 0xB, 0x12, 0x13, 0x14, 0xB, 0xB, 0xB}},
++	{0x0, 1, {0xC0}},
++	{0xCB, 15, {0x5, 0x5, 0x5, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}},
++	{0x0, 1, {0xD0}},
++	{0xCB, 15, {0x0, 0x0, 0x0, 0xA, 0x5, 0x0, 0x5, 0x5, 0x5, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}},
++	{0x0, 1, {0xE0}},
++	{0xCC, 4, {0x0, 0x0, 0x0, 0x0}},
++	{0x0, 1, {0xD0}},
++	{0xCD, 15, {0x1, 0x2, 0x4, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF}},
++	{0x0, 1, {0xE0}},
++	{0xCD, 12, {0x10, 0x11, 0x12, 0x13, 0x3, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B}},
++	{0x0, 1, {0xA0}},
++	{0xCD, 15, {0x1, 0x2, 0x4, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF}},
++	{0x0, 1, {0xB0}},
++	{0xCD, 12, {0x10, 0x11, 0x12, 0x13, 0x3, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B}},
++	{0x0, 1, {0x0}},
 +	{0xD8, 2, {0x34, 0x34}},
-+	{0x00, 1, {0x00}},
++	{0x0, 1, {0x0}},
 +	{0xD9, 1, {0x78}},
-+	{0x00, 1, {0x90}},
-+	{0xC5, 6, {0xB2, 0xD6, 0xA0, 0x0F, 0xA0, 0x14}},
-+	{0x00, 1, {0x96}},
-+	{0xc5, 4, {0xa0, 0x0d, 0xaa, 0x0c}},
-+	{0x00, 1, {0xc2}},
-+	{0xc5, 1, {0x08}},
-+	{0x00, 1, {0xA8}},
-+	{0xc4, 1, {0x11}},
-+	{0x00, 1, {0xc1}},
-+	{0xc5, 1, {0x33}},
-+	{0x00, 1, {0xa3}},
-+	{0xc5, 1, {0x0f}},
-+	{0x00, 1, {0xa5}},
-+	{0xc5, 5, {0x0f, 0xa0, 0x0d, 0xaa, 0x0c}},
-+	{0x00, 1, {0x90}},
-+	{0xf5, 14, {0x03, 0x15, 0x09, 0x15, 0x07, 0x15, 0x0c, 0x15, 0x0a, 0x15, 0x09, 0x15, 0x0a, 0x15}},
-+	{0x00, 1, {0xa0}},
-+	{0xf5, 14, {0x12, 0x11, 0x03, 0x15, 0x09, 0x15, 0x11, 0x15, 0x08, 0x15, 0x07, 0x15, 0x09, 0x15}},
-+	{0x00, 1, {0xc0}},
-+	{0xf5, 14, {0x0e, 0x15, 0x0e, 0x15, 0x00, 0x15, 0x00, 0x15, 0x0e, 0x15, 0x14, 0x11, 0x00, 0x15}},
-+	{0x00, 1, {0xd0}},
-+	{0xf5, 15, {0x07, 0x15, 0x0a, 0x15, 0x10, 0x11, 0x00, 0x10, 0x90, 0x90, 0x90, 0x02, 0x90, 0x00, 0x00}},
-+	{0x00, 1, {0x80}},
-+	{0xC4, 1, {0x00}},
-+	{0x00, 1, {0x81}},
++	{0x0, 1, {0x90}},
++	{0xC5, 6, {0xB2, 0xD6, 0xA0, 0xF, 0xA0, 0x14}},
++	{0x0, 1, {0x96}},
++	{0xC5, 4, {0xA0, 0xD, 0xAA, 0xC}},
++	{0x0, 1, {0xC2}},
++	{0xC5, 1, {0x8}},
++	{0x0, 1, {0xA8}},
++	{0xC4, 1, {0x11}},
++	{0x0, 1, {0xC1}},
++	{0xC5, 1, {0x33}},
++	{0x0, 1, {0xA3}},
++	{0xC5, 1, {0xF}},
++	{0x0, 1, {0xA5}},
++	{0xC5, 5, {0xF, 0xA0, 0xD, 0xAA, 0xC}},
++	{0x0, 1, {0x90}},
++	{0xF5, 14, {0x3, 0x15, 0x9, 0x15, 0x7, 0x15, 0xC, 0x15, 0xA, 0x15, 0x9, 0x15, 0xA, 0x15}},
++	{0x0, 1, {0xA0}},
++	{0xF5, 14, {0x12, 0x11, 0x3, 0x15, 0x9, 0x15, 0x11, 0x15, 0x8, 0x15, 0x7, 0x15, 0x9, 0x15}},
++	{0x0, 1, {0xC0}},
++	{0xF5, 14, {0xE, 0x15, 0xE, 0x15, 0x0, 0x15, 0x0, 0x15, 0xE, 0x15, 0x14, 0x11, 0x0, 0x15}},
++	{0x0, 1, {0xD0}},
++	{0xF5, 15, {0x7, 0x15, 0xA, 0x15, 0x10, 0x11, 0x0, 0x10, 0x90, 0x90, 0x90, 0x2, 0x90, 0x0, 0x0}},
++	{0x0, 1, {0x80}},
++	{0xC4, 1, {0x0}},
++	{0x0, 1, {0x81}},
 +	{0xC4, 1, {0x24}},
-+	{0x00, 1, {0x9D}},
++	{0x0, 1, {0x9D}},
 +	{0xC5, 1, {0xAA}},
-+	{0x00, 1, {0x92}},
++	{0x0, 1, {0x92}},
 +	{0xE9, 1, {0x10}},
-+	{0x00, 1, {0x00}},
-+	{0xE1, 24, {0x76, 0x79, 0x7b, 0x7e, 0x81, 0x85, 0x8a, 0x94, 0x96, 0xa2, 0xa8, 0xac, 0x50, 0x4d, 0x4d, 0x41, 0x35, 0x26, 0x1e, 0x18, 0x12, 0x0a, 0x06, 0x01}},
-+	{0x00, 1, {0x00}},
-+	{0xE2, 24, {0x76, 0x79, 0x7b, 0x7e, 0x81, 0x85, 0x8a, 0x94, 0x96, 0xa2, 0xa8, 0xac, 0x50, 0x4d, 0x4d, 0x41, 0x35, 0x26, 0x1e, 0x18, 0x12, 0x0a, 0x06, 0x01}},
-+	{0x00, 1, {0x00}},
-+	{0xE3, 24, {0x76, 0x79, 0x7b, 0x7e, 0x81, 0x85, 0x8a, 0x94, 0x96, 0xa2, 0xa8, 0xac, 0x50, 0x4d, 0x4d, 0x41, 0x35, 0x26, 0x1e, 0x18, 0x12, 0x0a, 0x06, 0x01}},
-+	{0x00, 1, {0x00}},
-+	{0xE4, 24, {0x76, 0x79, 0x7b, 0x7e, 0x81, 0x85, 0x8a, 0x94, 0x96, 0xa2, 0xa8, 0xac, 0x50, 0x4d, 0x4d, 0x41, 0x35, 0x26, 0x1e, 0x18, 0x12, 0x0a, 0x06, 0x01}},
-+	{0x00, 1, {0x00}},
-+	{0xE5, 24, {0x76, 0x79, 0x7b, 0x7e, 0x81, 0x85, 0x8a, 0x94, 0x96, 0xa2, 0xa8, 0xac, 0x50, 0x4d, 0x4d, 0x41, 0x35, 0x26, 0x1e, 0x18, 0x12, 0x0a, 0x06, 0x01}},
-+	{0x00, 1, {0x00}},
-+	{0xE6, 24, {0x76, 0x79, 0x7b, 0x7e, 0x81, 0x85, 0x8a, 0x94, 0x96, 0xa2, 0xa8, 0xac, 0x50, 0x4d, 0x4d, 0x41, 0x35, 0x26, 0x1e, 0x18, 0x12, 0x0a, 0x06, 0x01}},
-+	{0x00, 1, {0x00}},
-+	{0xff, 3, {0x00, 0x00, 0x00}},
-+	{0x36, 1, {0x01}},
-+	{0x11, 1, {0x00}},
++	{0x0, 1, {0x0}},
++	{0xE1, 24, {0x76, 0x79, 0x7B, 0x7E, 0x81, 0x85, 0x8A, 0x94, 0x96, 0xA2, 0xA8, 0xAC, 0x50, 0x4D, 0x4D, 0x41, 0x35, 0x26, 0x1E, 0x18, 0x12, 0xA, 0x6, 0x1}},
++	{0x0, 1, {0x0}},
++	{0xE2, 24, {0x76, 0x79, 0x7B, 0x7E, 0x81, 0x85, 0x8A, 0x94, 0x96, 0xA2, 0xA8, 0xAC, 0x50, 0x4D, 0x4D, 0x41, 0x35, 0x26, 0x1E, 0x18, 0x12, 0xA, 0x6, 0x1}},
++	{0x0, 1, {0x0}},
++	{0xE3, 24, {0x76, 0x79, 0x7B, 0x7E, 0x81, 0x85, 0x8A, 0x94, 0x96, 0xA2, 0xA8, 0xAC, 0x50, 0x4D, 0x4D, 0x41, 0x35, 0x26, 0x1E, 0x18, 0x12, 0xA, 0x6, 0x1}},
++	{0x0, 1, {0x0}},
++	{0xE4, 24, {0x76, 0x79, 0x7B, 0x7E, 0x81, 0x85, 0x8A, 0x94, 0x96, 0xA2, 0xA8, 0xAC, 0x50, 0x4D, 0x4D, 0x41, 0x35, 0x26, 0x1E, 0x18, 0x12, 0xA, 0x6, 0x1}},
++	{0x0, 1, {0x0}},
++	{0xE5, 24, {0x76, 0x79, 0x7B, 0x7E, 0x81, 0x85, 0x8A, 0x94, 0x96, 0xA2, 0xA8, 0xAC, 0x50, 0x4D, 0x4D, 0x41, 0x35, 0x26, 0x1E, 0x18, 0x12, 0xA, 0x6, 0x1}},
++	{0x0, 1, {0x0}},
++	{0xE6, 24, {0x76, 0x79, 0x7B, 0x7E, 0x81, 0x85, 0x8A, 0x94, 0x96, 0xA2, 0xA8, 0xAC, 0x50, 0x4D, 0x4D, 0x41, 0x35, 0x26, 0x1E, 0x18, 0x12, 0xA, 0x6, 0x1}},
++	{0x0, 1, {0x0}},
++	{0xFF, 3, {0x0, 0x0, 0x0}},
++	{0x36, 1, {0x1}},
++	{0x11, 1, {0x0}},
 +	{REGFLAG_DELAY, 120, {}},
-+	{0x29, 1, {0x00}},
++	{0x29, 1, {0x0}},
 +	{REGFLAG_DELAY, 30, {}},
-+	{REGFLAG_END_OF_TABLE, 0x00, {}}
++	{REGFLAG_END_OF_TABLE, 0x0, {}}
 +};
 +
 +static struct LCM_setting_table lcm_deep_sleep_mode_in_setting[] = {
 +	// Sleep mode off
-+	{0x28, 1, {0x00}},
++	{0x28, 1, {0x0}},
 +	{REGFLAG_DELAY, 20, {}},
 +
 +	// Sleep mode on
-+	{0x10, 1, {0x00}},
++	{0x10, 1, {0x0}},
 +	{REGFLAG_DELAY, 120, {}},
-+	{REGFLAG_END_OF_TABLE, 0x00, {}}
++	{REGFLAG_END_OF_TABLE, 0x0, {}}
 +};
 +
 +static void push_table(struct LCM_setting_table *table, unsigned int count, unsigned char force_update)
 +{
 +	unsigned int i;
 +
-+	for(i = 0; i < count; i++) {
++	for (i = 0; i < count; i++) {
 +		unsigned cmd;
 +		cmd = table[i].cmd;
 +
@@ -46265,37 +46205,37 @@ index 00000000..375ae309
 +static void lcm_get_params(LCM_PARAMS *params)
 +{
 +	memset(params, 0, sizeof(LCM_PARAMS));
-+	params->type = LCM_TYPE_DSI;
-+	params->width = FRAME_WIDTH;
-+	params->height = FRAME_HEIGHT;
-+	params->dbi.te_mode = LCM_DBI_TE_MODE_VSYNC_ONLY;
 +	params->dbi.te_edge_polarity = LCM_POLARITY_RISING;
-+	params->dsi.noncont_clock = 1;
-+	params->dsi.noncont_clock_period = 2;
-+	params->dsi.mode = SYNC_PULSE_VDO_MODE;
++	params->dbi.te_mode = LCM_DBI_TE_MODE_VSYNC_ONLY;
 +	params->dsi.LANE_NUM = LCM_FOUR_LANE;
-+	params->dsi.data_format.color_order = LCM_COLOR_ORDER_RGB;
-+	params->dsi.data_format.trans_seq = LCM_DSI_TRANS_SEQ_MSB_FIRST;
-+	params->dsi.data_format.padding = LCM_DSI_PADDING_ON_LSB;
-+	params->dsi.data_format.format = LCM_DSI_FORMAT_RGB888;
-+	params->dsi.intermediat_buffer_num = 2;
-+	params->dsi.PS = LCM_PACKED_PS_24BIT_RGB888;
-+	params->dsi.packet_size = 256;
-+	params->dsi.vertical_sync_active = 6;
-+	params->dsi.vertical_backporch = 20;
-+	params->dsi.vertical_frontporch = 14;
-+	params->dsi.vertical_active_line = FRAME_HEIGHT;
-+	params->dsi.horizontal_sync_active = 60;
-+	params->dsi.horizontal_backporch = 100;
-+	params->dsi.horizontal_frontporch = 100;
-+	params->dsi.horizontal_blanking_pixel = 60;
-+	params->dsi.horizontal_active_pixel = FRAME_WIDTH;
 +	params->dsi.PLL_CLOCK = 225;
-+	params->dsi.esd_check_enable = 1;
++	params->dsi.PS = LCM_PACKED_PS_24BIT_RGB888;
 +	params->dsi.customization_esd_check_enable = 1;
-+	params->dsi.lcm_esd_check_table[0].cmd = 0x0a;
++	params->dsi.data_format.color_order = LCM_COLOR_ORDER_RGB;
++	params->dsi.data_format.format = LCM_DSI_FORMAT_RGB888;
++	params->dsi.data_format.padding = LCM_DSI_PADDING_ON_LSB;
++	params->dsi.data_format.trans_seq = LCM_DSI_TRANS_SEQ_MSB_FIRST;
++	params->dsi.esd_check_enable = 1;
++	params->dsi.horizontal_active_pixel = FRAME_WIDTH;
++	params->dsi.horizontal_backporch = 100;
++	params->dsi.horizontal_blanking_pixel = 60;
++	params->dsi.horizontal_frontporch = 100;
++	params->dsi.horizontal_sync_active = 60;
++	params->dsi.intermediat_buffer_num = 2;
++	params->dsi.lcm_esd_check_table[0].cmd = 0xA;
 +	params->dsi.lcm_esd_check_table[0].count = 1;
 +	params->dsi.lcm_esd_check_table[0].para_list[0] = 0x9C;
++	params->dsi.mode = SYNC_PULSE_VDO_MODE;
++	params->dsi.noncont_clock = 1;
++	params->dsi.noncont_clock_period = 2;
++	params->dsi.packet_size = 256;
++	params->dsi.vertical_active_line = FRAME_HEIGHT;
++	params->dsi.vertical_backporch = 20;
++	params->dsi.vertical_frontporch = 14;
++	params->dsi.vertical_sync_active = 6;
++	params->height = FRAME_HEIGHT;
++	params->type = LCM_TYPE_DSI;
++	params->width = FRAME_WIDTH;
 +}
 +
 +static unsigned int lcm_compare_id(void)
@@ -46315,19 +46255,17 @@ index 00000000..375ae309
 +	SET_RESET_PIN(1);
 +	MDELAY(150);
 +
-+	array[0] = 0x00023700;
++	array[0] = 0x23700;
 +	dsi_set_cmdq(array, 1, 1);
 +	read_reg_v2(0xDA, buffer, 1);
 +
 +	id = buffer[0];
 +	lcd_type_id = buffer[0];
-+	pr_info("%s, id of otm1285a = 0x%08x\n", __func__, id);
 +
-+	if((id == LCM_ID_OTM1285) || (id == LCM_ID_OTM1285_OTP)) {
++	if ((id == LCM_ID_OTM1285) || (id == LCM_ID_OTM1285_OTP))
 +		return 1;
-+	} else {
++	else
 +		return 0;
-+	}
 +}
 +
 +
@@ -46345,11 +46283,10 @@ index 00000000..375ae309
 +	SET_RESET_PIN(1);
 +	MDELAY(120);
 +
-+	if(lcd_type_id == LCM_ID_OTM1285) {
++	if (lcd_type_id == LCM_ID_OTM1285)
 +		push_table(lcm_initialization_setting, sizeof(lcm_initialization_setting) / sizeof(struct LCM_setting_table), 1);
-+	} else {
++	else
 +		push_table(lcm_initialization_setting_otp, sizeof(lcm_initialization_setting_otp) / sizeof(struct LCM_setting_table), 1);
-+	}
 +}
 +
 +static void lcm_suspend(void)
@@ -46374,76 +46311,43 @@ index 00000000..375ae309
 +	.init = lcm_init,
 +	.suspend = lcm_suspend,
 +	.resume = lcm_resume,
-+	.compare_id = lcm_compare_id,
++	.compare_id = lcm_compare_id
 +};
 diff --git a/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_tm/Makefile b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_tm/Makefile
 new file mode 100644
-index 00000000..f12363ff
+index 00000000000..1e45d98794f
 --- /dev/null
 +++ b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_tm/Makefile
-@@ -0,0 +1,20 @@
-+#
-+# Copyright (C) 2015 MediaTek Inc.
-+#
-+# This program is free software: you can redistribute it and/or modify
-+# it under the terms of the GNU General Public License version 2 as
-+# published by the Free Software Foundation.
-+#
-+# This program is distributed in the hope that it will be useful,
-+# but WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+# GNU General Public License for more details.
-+#
-+
-+#
-+# Makefile for misc devices that really don't fit anywhere else.
-+#
-+
+@@ -0,0 +1,2 @@
 +obj-y += otm1285a_hd720_dsi_vdo_tm.o
-+
 +ccflags-$(CONFIG_MTK_LCM) += -I$(srctree)/drivers/misc/mediatek/lcm/inc
 diff --git a/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_tm/otm1285a_hd720_dsi_vdo_tm.c b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_tm/otm1285a_hd720_dsi_vdo_tm.c
 new file mode 100644
-index 00000000..356b7290
+index 00000000000..ba62babd4f9
 --- /dev/null
 +++ b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_tm/otm1285a_hd720_dsi_vdo_tm.c
-@@ -0,0 +1,316 @@
-+/*
-+ * Copyright (C) 2015 MediaTek Inc.
-+ *
-+ * This program is free software: you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ */
-+
+@@ -0,0 +1,299 @@
 +#include <mt-plat/mt_gpio.h>
 +#include <mach/gpio_const.h>
 +#include <linux/string.h>
 +#include "lcm_drv.h"
 +
-+#define LCM_ID_OTM1285						0x40
++#define LCM_ID_OTM1285	0x40
 +
-+#define FRAME_WIDTH						(720)
-+#define FRAME_HEIGHT						(1280)
++#define FRAME_HEIGHT	(1280)
++#define FRAME_WIDTH	(720)
 +
-+#define REGFLAG_DELAY						0xFFFF
-+#define REGFLAG_END_OF_TABLE					0xFFFA
++#define REGFLAG_DELAY	0xFFFF
++#define REGFLAG_END_OF_TABLE	0xFFFA
 +
-+#define GPIO_LCM_PWR_EN						(GPIO119 | 0x80000000)
++#define GPIO_LCM_PWR_EN	(GPIO119 | 0x80000000)
 +
-+#define SET_RESET_PIN(v)					(lcm_util.set_reset_pin((v)))
-+#define MDELAY(n) 						(lcm_util.mdelay(n))
++#define MDELAY(n)	(lcm_util.mdelay(n))
++#define SET_RESET_PIN(v)	(lcm_util.set_reset_pin((v)))
 +
++#define dsi_set_cmdq(pdata, queue_size, force_update)	lcm_util.dsi_set_cmdq(pdata, queue_size, force_update)
 +#define dsi_set_cmdq_V2(cmd, count, ppara, force_update)	lcm_util.dsi_set_cmdq_V2(cmd, count, ppara, force_update)
-+#define dsi_set_cmdq(pdata, queue_size, force_update)		lcm_util.dsi_set_cmdq(pdata, queue_size, force_update)
-+#define read_reg_v2(cmd, buffer, buffer_size)			lcm_util.dsi_dcs_read_lcm_reg_v2(cmd, buffer, buffer_size)
-+
-+#define __SAME_IC_COMPATIBLE__
++#define read_reg_v2(cmd, buffer, buffer_size)	lcm_util.dsi_dcs_read_lcm_reg_v2(cmd, buffer, buffer_size)
 +
 +static LCM_UTIL_FUNCS lcm_util;
 +
@@ -46454,147 +46358,147 @@ index 00000000..356b7290
 +};
 +
 +static struct LCM_setting_table lcm_initialization_setting[] = {
-+	{0x00, 1, {0x00}},
-+	{0xFF, 3, {0x12, 0x85, 0x01}},
-+	{0x00, 1, {0x80}},
++	{0x0, 1, {0x0}},
++	{0xFF, 3, {0x12, 0x85, 0x1}},
++	{0x0, 1, {0x80}},
 +	{0xFF, 2, {0x12, 0x85}},
-+	{0x00, 1, {0xC1}},
++	{0x0, 1, {0xC1}},
 +	{0xC5, 1, {0x33}},
-+	{0x00, 1, {0x93}},
++	{0x0, 1, {0x93}},
 +	{0xC5, 1, {0x17}},
-+	{0x00, 1, {0x95}},
++	{0x0, 1, {0x95}},
 +	{0xC5, 1, {0x10}},
-+	{0x00, 1, {0x96}},
++	{0x0, 1, {0x96}},
 +	{0xC5, 1, {0x80}},
-+	{0x00, 1, {0x97}},
++	{0x0, 1, {0x97}},
 +	{0xC5, 1, {0x16}},
-+	{0x00, 1, {0x98}},
-+	{0xC5, 2, {0x80, 0x0F}},
-+	{0x00, 1, {0x00}},
++	{0x0, 1, {0x98}},
++	{0xC5, 2, {0x80, 0xF}},
++	{0x0, 1, {0x0}},
 +	{0xD8, 2, {0x32, 0x32}},
-+	{0x00, 1, {0x80}},
++	{0x0, 1, {0x80}},
 +	{0xC5, 1, {0x34}},
-+	{0x00, 1, {0x90}},
-+	{0xF5, 14, {0x03, 0x15, 0x09, 0x15, 0x07, 0x15, 0x0C, 0x15, 0x0A, 0x15, 0x09, 0x15, 0x0A, 0x15}},
-+	{0x00, 1, {0xA0}},
-+	{0xF5, 14, {0x12, 0x11, 0x03, 0x15, 0x09, 0x15, 0x11, 0x15, 0x08, 0x15, 0x07, 0x15, 0x09, 0x15}},
-+	{0x00, 1, {0xC0}},
-+	{0xF5, 14, {0x0E, 0x15, 0x0E, 0x15, 0x00, 0x15, 0x00, 0x15, 0x2E, 0x15, 0x14, 0x11, 0x00, 0x25}},
-+	{0x00, 1, {0xD0}},
-+	{0xF5, 15, {0x07, 0x15, 0x0A, 0x15, 0x10, 0x11, 0x00, 0x10, 0x90, 0x90, 0x90, 0x02, 0x90, 0x00, 0x00}},
-+	{0x00, 1, {0x82}},
-+	{0xC0, 3, {0x00, 0x0E, 0x0C}},
-+	{0x00, 1, {0x80}},
-+	{0xC0, 2, {0x00, 0x70}},
-+	{0x00, 1, {0x80}},
++	{0x0, 1, {0x90}},
++	{0xF5, 14, {0x3, 0x15, 0x9, 0x15, 0x7, 0x15, 0xC, 0x15, 0xA, 0x15, 0x9, 0x15, 0xA, 0x15}},
++	{0x0, 1, {0xA0}},
++	{0xF5, 14, {0x12, 0x11, 0x3, 0x15, 0x9, 0x15, 0x11, 0x15, 0x8, 0x15, 0x7, 0x15, 0x9, 0x15}},
++	{0x0, 1, {0xC0}},
++	{0xF5, 14, {0xE, 0x15, 0xE, 0x15, 0x0, 0x15, 0x0, 0x15, 0x2E, 0x15, 0x14, 0x11, 0x0, 0x25}},
++	{0x0, 1, {0xD0}},
++	{0xF5, 15, {0x7, 0x15, 0xA, 0x15, 0x10, 0x11, 0x0, 0x10, 0x90, 0x90, 0x90, 0x2, 0x90, 0x0, 0x0}},
++	{0x0, 1, {0x82}},
++	{0xC0, 3, {0x0, 0xE, 0xC}},
++	{0x0, 1, {0x80}},
++	{0xC0, 2, {0x0, 0x70}},
++	{0x0, 1, {0x80}},
 +	{0xC1, 4, {0x19, 0x19, 0x19, 0x19}},
-+	{0x00, 1, {0x90}},
++	{0x0, 1, {0x90}},
 +	{0xC1, 1, {0x77}},
-+	{0x00, 1, {0x80}},
-+	{0xC2, 8, {0x84, 0x02, 0x7B, 0x12, 0x85, 0x01, 0x5D, 0xF0}},
-+	{0x00, 1, {0xF0}},
-+	{0xC2, 2, {0x00, 0x00}},
-+	{0x00, 1, {0x90}},
-+	{0xC2, 15, {0x82, 0x02, 0x01, 0x0D, 0x05, 0x81, 0x02, 0x01, 0x0D, 0x05, 0x80, 0x02, 0x01, 0x0D, 0x05}},
-+	{0x00, 1, {0xA0}},
-+	{0xC2, 5, {0x83, 0x02, 0x01, 0x0D, 0x05}},
-+	{0x00, 1, {0xEC}},
-+	{0xC2, 2, {0x10, 0x00}},
-+	{0x00, 1, {0xA0}},
-+	{0xC0, 1, {0x0B}},
-+	{0x00, 1, {0xA3}},
-+	{0xC0, 1, {0x00}},
-+	{0x00, 1, {0xA5}},
-+	{0xC0, 2, {0x18, 0x05}},
-+	{0x00, 1, {0x80}},
-+	{0xCC, 12, {0x03, 0x04, 0x05, 0x06, 0x11, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B}},
-+	{0x00, 1, {0xB0}},
-+	{0xCC, 12, {0x06, 0x05, 0x04, 0x03, 0x0C, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B}},
-+	{0x00, 1, {0x80}},
-+	{0xCD, 15, {0x0B, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B, 0x0B, 0x01, 0x02, 0x14, 0x13, 0x12, 0x0B, 0x0B, 0x0B}},
-+	{0x00, 1, {0x80}},
-+	{0xCB, 7, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
-+	{0x00, 1, {0xF0}},
++	{0x0, 1, {0x80}},
++	{0xC2, 8, {0x84, 0x2, 0x7B, 0x12, 0x85, 0x1, 0x5D, 0xF0}},
++	{0x0, 1, {0xF0}},
++	{0xC2, 2, {0x0, 0x0}},
++	{0x0, 1, {0x90}},
++	{0xC2, 15, {0x82, 0x2, 0x1, 0xD, 0x5, 0x81, 0x2, 0x1, 0xD, 0x5, 0x80, 0x2, 0x1, 0xD, 0x5}},
++	{0x0, 1, {0xA0}},
++	{0xC2, 5, {0x83, 0x2, 0x1, 0xD, 0x5}},
++	{0x0, 1, {0xEC}},
++	{0xC2, 2, {0x10, 0x0}},
++	{0x0, 1, {0xA0}},
++	{0xC0, 1, {0xB}},
++	{0x0, 1, {0xA3}},
++	{0xC0, 1, {0x0}},
++	{0x0, 1, {0xA5}},
++	{0xC0, 2, {0x18, 0x5}},
++	{0x0, 1, {0x80}},
++	{0xCC, 12, {0x3, 0x4, 0x5, 0x6, 0x11, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB}},
++	{0x0, 1, {0xB0}},
++	{0xCC, 12, {0x6, 0x5, 0x4, 0x3, 0xC, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB}},
++	{0x0, 1, {0x80}},
++	{0xCD, 15, {0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0xB, 0x1, 0x2, 0x14, 0x13, 0x12, 0xB, 0xB, 0xB}},
++	{0x0, 1, {0x80}},
++	{0xCB, 7, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}},
++	{0x0, 1, {0xF0}},
 +	{0xCB, 7, {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC, 0xFF}},
-+	{0x00, 1, {0xC0}},
-+	{0xCB, 15, {0x05, 0xFD, 0xFD, 0xFD, 0xFD, 0xFD, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
-+	{0x00, 1, {0xD0}},
-+	{0xCB, 12, {0x00, 0x00, 0x00, 0x00, 0xFD, 0x00, 0xFD, 0xFD, 0x05, 0x00, 0x00, 0x00}},
-+	{0x00, 1, {0x90}},
-+	{0xCB, 15, {0x40, 0x40, 0x40, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
-+	{0x00, 1, {0xA0}},
-+	{0xCB, 12, {0x00, 0x00, 0x00, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x00, 0x00, 0x00}},
-+	{0x00, 1, {0xE0}},
-+	{0xCC, 4, {0x80, 0xF0, 0x00, 0x00}},
-+	{0x00, 1, {0xD0}},
-+	{0xCD, 15, {0x01, 0x00, 0x03, 0x00, 0x13, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F}},
-+	{0x00, 1, {0xE0}},
-+	{0xCD, 12, {0x10, 0x11, 0x12, 0x05, 0x14, 0x15, 0x08, 0x08, 0x08, 0x19, 0x1A, 0x1B}},
-+	{0x00, 1, {0xA0}},
-+	{0xCD, 15, {0x00, 0x02, 0x00, 0x04, 0x13, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F}},
-+	{0x00, 1, {0xB0}},
-+	{0xCD, 12, {0x10, 0x11, 0x12, 0x05, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B}},
-+	{0x00, 1, {0xA2}},
-+	{0xC1, 1, {0x00}},
-+	{0x00, 1, {0xB4}},
++	{0x0, 1, {0xC0}},
++	{0xCB, 15, {0x5, 0xFD, 0xFD, 0xFD, 0xFD, 0xFD, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}},
++	{0x0, 1, {0xD0}},
++	{0xCB, 12, {0x0, 0x0, 0x0, 0x0, 0xFD, 0x0, 0xFD, 0xFD, 0x5, 0x0, 0x0, 0x0}},
++	{0x0, 1, {0x90}},
++	{0xCB, 15, {0x40, 0x40, 0x40, 0x40, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}},
++	{0x0, 1, {0xA0}},
++	{0xCB, 12, {0x0, 0x0, 0x0, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x0, 0x0, 0x0}},
++	{0x0, 1, {0xE0}},
++	{0xCC, 4, {0x80, 0xF0, 0x0, 0x0}},
++	{0x0, 1, {0xD0}},
++	{0xCD, 15, {0x1, 0x0, 0x3, 0x0, 0x13, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF}},
++	{0x0, 1, {0xE0}},
++	{0xCD, 12, {0x10, 0x11, 0x12, 0x5, 0x14, 0x15, 0x8, 0x8, 0x8, 0x19, 0x1A, 0x1B}},
++	{0x0, 1, {0xA0}},
++	{0xCD, 15, {0x0, 0x2, 0x0, 0x4, 0x13, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF}},
++	{0x0, 1, {0xB0}},
++	{0xCD, 12, {0x10, 0x11, 0x12, 0x5, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B}},
++	{0x0, 1, {0xA2}},
++	{0xC1, 1, {0x0}},
++	{0x0, 1, {0xB4}},
 +	{0xC0, 1, {0x10}},
-+	{0x00, 1, {0xB3}},
++	{0x0, 1, {0xB3}},
 +	{0xC0, 1, {0x33}},
-+	{0x00, 1, {0x80}},
-+	{0xC4, 1, {0x04}},
-+	{0x00, 1, {0x83}},
-+	{0xC4, 1, {0x02}},
-+	{0x00, 1, {0xF8}},
++	{0x0, 1, {0x80}},
++	{0xC4, 1, {0x4}},
++	{0x0, 1, {0x83}},
++	{0xC4, 1, {0x2}},
++	{0x0, 1, {0xF8}},
 +	{0xC2, 1, {0x40}},
-+	{0x00, 1, {0x80}},
-+	{0xA5, 1, {0x0C}},
-+	{0x00, 1, {0x81}},
-+	{0xA5, 1, {0x04}},
-+	{0x00, 1, {0xE6}},
-+	{0xCD, 3, {0x08, 0x08, 0x08}},
-+	{0x00, 1, {0xF2}},
-+	{0xC2, 2, {0x04, 0x04}},
-+	{0x00, 1, {0xFD}},
++	{0x0, 1, {0x80}},
++	{0xA5, 1, {0xC}},
++	{0x0, 1, {0x81}},
++	{0xA5, 1, {0x4}},
++	{0x0, 1, {0xE6}},
++	{0xCD, 3, {0x8, 0x8, 0x8}},
++	{0x0, 1, {0xF2}},
++	{0xC2, 2, {0x4, 0x4}},
++	{0x0, 1, {0xFD}},
 +	{0xC2, 3, {0xFF, 0xFF, 0xFF}},
-+	{0x00, 1, {0x9A}},
++	{0x0, 1, {0x9A}},
 +	{0xC5, 3, {0x22, 0x22, 0x20}},
-+	{0x00, 1, {0x00}},
-+	{0xE1, 24, {0x0A, 0x1A, 0x24, 0x33, 0x3C, 0x44, 0x51, 0x63, 0x6D, 0x7F, 0x8A, 0x92, 0x67, 0x61, 0x5D, 0x4F, 0x3E, 0x30, 0x26, 0x20, 0x1A, 0x14, 0x12, 0x11}},
-+	{0x00, 1, {0x00}},
-+	{0xE2, 24, {0x0A, 0x1A, 0x24, 0x33, 0x3C, 0x44, 0x51, 0x63, 0x6D, 0x7F, 0x8A, 0x92, 0x67, 0x61, 0x5D, 0x4F, 0x3E, 0x30, 0x26, 0x20, 0x1A, 0x14, 0x12, 0x11}},
-+	{0x00, 1, {0x00}},
-+	{0xE3, 24, {0x0A, 0x1A, 0x24, 0x33, 0x3C, 0x44, 0x51, 0x63, 0x6D, 0x7F, 0x8A, 0x92, 0x67, 0x61, 0x5D, 0x4F, 0x3E, 0x30, 0x26, 0x20, 0x1A, 0x14, 0x12, 0x11}},
-+	{0x00, 1, {0x00}},
-+	{0xE4, 24, {0x0A, 0x1A, 0x24, 0x33, 0x3C, 0x44, 0x51, 0x63, 0x6D, 0x7F, 0x8A, 0x92, 0x67, 0x61, 0x5D, 0x4F, 0x3E, 0x30, 0x26, 0x20, 0x1A, 0x14, 0x12, 0x11}},
-+	{0x00, 1, {0x00}},
-+	{0xE5, 24, {0x0A, 0x1A, 0x24, 0x33, 0x3C, 0x44, 0x51, 0x63, 0x6D, 0x7F, 0x8A, 0x92, 0x67, 0x61, 0x5D, 0x4F, 0x3E, 0x30, 0x26, 0x20, 0x1A, 0x14, 0x12, 0x11}},
-+	{0x00, 1, {0x00}},
-+	{0xE6, 24, {0x0A, 0x1A, 0x24, 0x33, 0x3C, 0x44, 0x51, 0x63, 0x6D, 0x7F, 0x8A, 0x92, 0x67, 0x61, 0x5D, 0x4F, 0x3E, 0x30, 0x26, 0x20, 0x1A, 0x14, 0x12, 0x11}},
-+	{0x00, 1, {0x00}},
++	{0x0, 1, {0x0}},
++	{0xE1, 24, {0xA, 0x1A, 0x24, 0x33, 0x3C, 0x44, 0x51, 0x63, 0x6D, 0x7F, 0x8A, 0x92, 0x67, 0x61, 0x5D, 0x4F, 0x3E, 0x30, 0x26, 0x20, 0x1A, 0x14, 0x12, 0x11}},
++	{0x0, 1, {0x0}},
++	{0xE2, 24, {0xA, 0x1A, 0x24, 0x33, 0x3C, 0x44, 0x51, 0x63, 0x6D, 0x7F, 0x8A, 0x92, 0x67, 0x61, 0x5D, 0x4F, 0x3E, 0x30, 0x26, 0x20, 0x1A, 0x14, 0x12, 0x11}},
++	{0x0, 1, {0x0}},
++	{0xE3, 24, {0xA, 0x1A, 0x24, 0x33, 0x3C, 0x44, 0x51, 0x63, 0x6D, 0x7F, 0x8A, 0x92, 0x67, 0x61, 0x5D, 0x4F, 0x3E, 0x30, 0x26, 0x20, 0x1A, 0x14, 0x12, 0x11}},
++	{0x0, 1, {0x0}},
++	{0xE4, 24, {0xA, 0x1A, 0x24, 0x33, 0x3C, 0x44, 0x51, 0x63, 0x6D, 0x7F, 0x8A, 0x92, 0x67, 0x61, 0x5D, 0x4F, 0x3E, 0x30, 0x26, 0x20, 0x1A, 0x14, 0x12, 0x11}},
++	{0x0, 1, {0x0}},
++	{0xE5, 24, {0xA, 0x1A, 0x24, 0x33, 0x3C, 0x44, 0x51, 0x63, 0x6D, 0x7F, 0x8A, 0x92, 0x67, 0x61, 0x5D, 0x4F, 0x3E, 0x30, 0x26, 0x20, 0x1A, 0x14, 0x12, 0x11}},
++	{0x0, 1, {0x0}},
++	{0xE6, 24, {0xA, 0x1A, 0x24, 0x33, 0x3C, 0x44, 0x51, 0x63, 0x6D, 0x7F, 0x8A, 0x92, 0x67, 0x61, 0x5D, 0x4F, 0x3E, 0x30, 0x26, 0x20, 0x1A, 0x14, 0x12, 0x11}},
++	{0x0, 1, {0x0}},
 +	{0xFF, 3, {0xFF, 0xFF, 0xFF}},
-+	{0x11, 1, {0x00}},
++	{0x11, 1, {0x0}},
 +	{REGFLAG_DELAY, 120, {}},
-+	{0x29, 1, {0x00}},
++	{0x29, 1, {0x0}},
 +	{REGFLAG_DELAY, 30, {}},
-+	{REGFLAG_END_OF_TABLE, 0x00, {}}
++	{REGFLAG_END_OF_TABLE, 0x0, {}}
 +};
 +
 +static struct LCM_setting_table lcm_deep_sleep_mode_in_setting[] = {
 +	// Sleep mode off
-+	{0x28, 1, {0x00}},
++	{0x28, 1, {0x0}},
 +	{REGFLAG_DELAY, 20, {}},
 +
 +	// Sleep mode on
-+	{0x10, 1, {0x00}},
++	{0x10, 1, {0x0}},
 +	{REGFLAG_DELAY, 120, {}},
-+	{REGFLAG_END_OF_TABLE, 0x00, {}}
++	{REGFLAG_END_OF_TABLE, 0x0, {}}
 +};
 +
 +static void push_table(struct LCM_setting_table *table, unsigned int count, unsigned char force_update)
 +{
 +	unsigned int i;
 +
-+	for(i = 0; i < count; i++) {
++	for (i = 0; i < count; i++) {
 +		unsigned cmd;
 +		cmd = table[i].cmd;
 +
@@ -46618,37 +46522,37 @@ index 00000000..356b7290
 +static void lcm_get_params(LCM_PARAMS *params)
 +{
 +	memset(params, 0, sizeof(LCM_PARAMS));
-+	params->type = LCM_TYPE_DSI;
-+	params->width = FRAME_WIDTH;
-+	params->height = FRAME_HEIGHT;
-+	params->dbi.te_mode = LCM_DBI_TE_MODE_VSYNC_ONLY;
 +	params->dbi.te_edge_polarity = LCM_POLARITY_RISING;
-+	params->dsi.noncont_clock = 1;
-+	params->dsi.noncont_clock_period = 2;
-+	params->dsi.mode = SYNC_PULSE_VDO_MODE;
++	params->dbi.te_mode = LCM_DBI_TE_MODE_VSYNC_ONLY;
 +	params->dsi.LANE_NUM = LCM_FOUR_LANE;
-+	params->dsi.data_format.color_order = LCM_COLOR_ORDER_RGB;
-+	params->dsi.data_format.trans_seq = LCM_DSI_TRANS_SEQ_MSB_FIRST;
-+	params->dsi.data_format.padding = LCM_DSI_PADDING_ON_LSB;
-+	params->dsi.data_format.format = LCM_DSI_FORMAT_RGB888;
-+	params->dsi.intermediat_buffer_num = 2;
-+	params->dsi.PS = LCM_PACKED_PS_24BIT_RGB888;
-+	params->dsi.packet_size = 256;
-+	params->dsi.vertical_sync_active = 6;
-+	params->dsi.vertical_backporch = 20;
-+	params->dsi.vertical_frontporch = 14;
-+	params->dsi.vertical_active_line = FRAME_HEIGHT;
-+	params->dsi.horizontal_sync_active = 60;
-+	params->dsi.horizontal_backporch = 100;
-+	params->dsi.horizontal_frontporch = 100;
-+	params->dsi.horizontal_blanking_pixel = 60;
-+	params->dsi.horizontal_active_pixel = FRAME_WIDTH;
 +	params->dsi.PLL_CLOCK = 239;
-+	params->dsi.esd_check_enable = 1;
++	params->dsi.PS = LCM_PACKED_PS_24BIT_RGB888;
 +	params->dsi.customization_esd_check_enable = 1;
-+	params->dsi.lcm_esd_check_table[0].cmd = 0x0a;
++	params->dsi.data_format.color_order = LCM_COLOR_ORDER_RGB;
++	params->dsi.data_format.format = LCM_DSI_FORMAT_RGB888;
++	params->dsi.data_format.padding = LCM_DSI_PADDING_ON_LSB;
++	params->dsi.data_format.trans_seq = LCM_DSI_TRANS_SEQ_MSB_FIRST;
++	params->dsi.esd_check_enable = 1;
++	params->dsi.horizontal_active_pixel = FRAME_WIDTH;
++	params->dsi.horizontal_backporch = 100;
++	params->dsi.horizontal_blanking_pixel = 60;
++	params->dsi.horizontal_frontporch = 100;
++	params->dsi.horizontal_sync_active = 60;
++	params->dsi.intermediat_buffer_num = 2;
++	params->dsi.lcm_esd_check_table[0].cmd = 0xA;
 +	params->dsi.lcm_esd_check_table[0].count = 1;
 +	params->dsi.lcm_esd_check_table[0].para_list[0] = 0x9C;
++	params->dsi.mode = SYNC_PULSE_VDO_MODE;
++	params->dsi.noncont_clock = 1;
++	params->dsi.noncont_clock_period = 2;
++	params->dsi.packet_size = 256;
++	params->dsi.vertical_active_line = FRAME_HEIGHT;
++	params->dsi.vertical_backporch = 20;
++	params->dsi.vertical_frontporch = 14;
++	params->dsi.vertical_sync_active = 6;
++	params->height = FRAME_HEIGHT;
++	params->type = LCM_TYPE_DSI;
++	params->width = FRAME_WIDTH;
 +}
 +
 +static unsigned int lcm_compare_id(void)
@@ -46668,18 +46572,16 @@ index 00000000..356b7290
 +	SET_RESET_PIN(1);
 +	MDELAY(150);
 +
-+	array[0] = 0x00023700;
++	array[0] = 0x23700;
 +	dsi_set_cmdq(array, 1, 1);
 +	read_reg_v2(0xDA, buffer, 1);
 +
 +	id = buffer[0];
-+	pr_info("%s, id of otm1285a = 0x%08x\n", __func__, id);
 +
-+	if(id == LCM_ID_OTM1285) {
++	if (id == LCM_ID_OTM1285)
 +		return 1;
-+	} else {
++	else
 +		return 0;
-+	}
 +}
 +
 +
@@ -46722,10 +46624,10 @@ index 00000000..356b7290
 +	.init = lcm_init,
 +	.suspend = lcm_suspend,
 +	.resume = lcm_resume,
-+	.compare_id = lcm_compare_id,
++	.compare_id = lcm_compare_id
 +};
 diff --git a/drivers/misc/mediatek/lens/Kconfig b/drivers/misc/mediatek/lens/Kconfig
-index dc48cd7f..98a7220f 100644
+index dc48cd7fce0..98a7220f298 100644
 --- a/drivers/misc/mediatek/lens/Kconfig
 +++ b/drivers/misc/mediatek/lens/Kconfig
 @@ -264,3 +264,21 @@ config MTK_LENS_WV511AAF_SUPPORT
@@ -46751,7 +46653,7 @@ index dc48cd7f..98a7220f 100644
 +	  lens driver for the camera sensor module
 +	  Set as y if the driver is used in this project
 diff --git a/drivers/misc/mediatek/lens/Makefile b/drivers/misc/mediatek/lens/Makefile
-index 06deaf6e..145c4d50 100644
+index 06deaf6efec..145c4d50b4a 100644
 --- a/drivers/misc/mediatek/lens/Makefile
 +++ b/drivers/misc/mediatek/lens/Makefile
 @@ -4,4 +4,4 @@
@@ -46762,7 +46664,7 @@ index 06deaf6e..145c4d50 100644
 \ No newline at end of file
 +obj-$(CONFIG_MTK_LENS)   += sub/
 diff --git a/drivers/misc/mediatek/lens/main/Makefile b/drivers/misc/mediatek/lens/main/Makefile
-index 578fdb39..b0c27cd0 100644
+index 578fdb3912a..b0c27cd0c56 100644
 --- a/drivers/misc/mediatek/lens/main/Makefile
 +++ b/drivers/misc/mediatek/lens/main/Makefile
 @@ -33,6 +33,12 @@ endif
@@ -46780,7 +46682,7 @@ index 578fdb39..b0c27cd0 100644
  mainaf-y  += common/bu6429af/BU6429AF.o
 diff --git a/drivers/misc/mediatek/lens/main/common/bu6429116109af/BU6429116109AF.c b/drivers/misc/mediatek/lens/main/common/bu6429116109af/BU6429116109AF.c
 new file mode 100644
-index 00000000..7046390a
+index 00000000000..7046390ad77
 --- /dev/null
 +++ b/drivers/misc/mediatek/lens/main/common/bu6429116109af/BU6429116109AF.c
 @@ -0,0 +1,250 @@
@@ -47036,7 +46938,7 @@ index 00000000..7046390a
 +}
 diff --git a/drivers/misc/mediatek/lens/main/common/bu6429116109af/Makefile b/drivers/misc/mediatek/lens/main/common/bu6429116109af/Makefile
 new file mode 100644
-index 00000000..fe01d8be
+index 00000000000..fe01d8bed62
 --- /dev/null
 +++ b/drivers/misc/mediatek/lens/main/common/bu6429116109af/Makefile
 @@ -0,0 +1,8 @@
@@ -47050,7 +46952,7 @@ index 00000000..fe01d8be
 +
 diff --git a/drivers/misc/mediatek/lens/main/common/bu6429116134af/BU6429116134AF.c b/drivers/misc/mediatek/lens/main/common/bu6429116134af/BU6429116134AF.c
 new file mode 100644
-index 00000000..3426f58a
+index 00000000000..3426f58a231
 --- /dev/null
 +++ b/drivers/misc/mediatek/lens/main/common/bu6429116134af/BU6429116134AF.c
 @@ -0,0 +1,249 @@
@@ -47305,7 +47207,7 @@ index 00000000..3426f58a
 +}
 diff --git a/drivers/misc/mediatek/lens/main/common/bu6429116134af/Makefile b/drivers/misc/mediatek/lens/main/common/bu6429116134af/Makefile
 new file mode 100644
-index 00000000..723a79d1
+index 00000000000..723a79d18fb
 --- /dev/null
 +++ b/drivers/misc/mediatek/lens/main/common/bu6429116134af/Makefile
 @@ -0,0 +1,8 @@
@@ -47318,7 +47220,7 @@ index 00000000..723a79d1
 +
 +
 diff --git a/drivers/misc/mediatek/lens/main/inc/lens_info.h b/drivers/misc/mediatek/lens/main/inc/lens_info.h
-index 3ef82de3..f2524e62 100644
+index 3ef82de3cb6..f2524e62873 100644
 --- a/drivers/misc/mediatek/lens/main/inc/lens_info.h
 +++ b/drivers/misc/mediatek/lens/main/inc/lens_info.h
 @@ -23,6 +23,12 @@
@@ -47335,7 +47237,7 @@ index 3ef82de3..f2524e62 100644
  #define AFDRV_AD5823 "AD5823"
  #define AFDRV_AD5823AF "AD5823AF"
 diff --git a/drivers/misc/mediatek/lens/main/inc/lens_list.h b/drivers/misc/mediatek/lens/main/inc/lens_list.h
-index d4f9abc9..91b6aef9 100644
+index d4f9abc9936..91b6aef9f8f 100644
 --- a/drivers/misc/mediatek/lens/main/inc/lens_list.h
 +++ b/drivers/misc/mediatek/lens/main/inc/lens_list.h
 @@ -15,6 +15,24 @@
@@ -47364,7 +47266,7 @@ index d4f9abc9..91b6aef9 100644
  #define AK7371AF_Ioctl AK7371AF_Ioctl_Main
  #define AK7371AF_Release AK7371AF_Release_Main
 diff --git a/drivers/misc/mediatek/lens/main/main_lens.c b/drivers/misc/mediatek/lens/main/main_lens.c
-index 3cea3c4b..1621c15b 100644
+index 3cea3c4b744..1621c15bd8f 100644
 --- a/drivers/misc/mediatek/lens/main/main_lens.c
 +++ b/drivers/misc/mediatek/lens/main/main_lens.c
 @@ -39,32 +39,12 @@
@@ -47562,7 +47464,7 @@ index 3cea3c4b..1621c15b 100644
  		LOG_INF("failed to register AF driver\n");
  		return -ENODEV;
 diff --git a/drivers/misc/mediatek/power/mt6735/charging_hw_fan5405.c b/drivers/misc/mediatek/power/mt6735/charging_hw_fan5405.c
-index f2b601a0..955e58e9 100644
+index f2b601a0de9..955e58e9dfa 100644
 --- a/drivers/misc/mediatek/power/mt6735/charging_hw_fan5405.c
 +++ b/drivers/misc/mediatek/power/mt6735/charging_hw_fan5405.c
 @@ -527,7 +527,7 @@ charging_hw_init, charging_dump_register, charging_enable, charging_set_cv_volta
@@ -47575,7 +47477,7 @@ index f2b601a0..955e58e9 100644
  	s32 status;
  
 diff --git a/drivers/misc/mediatek/power/mt6735/fan5405.c b/drivers/misc/mediatek/power/mt6735/fan5405.c
-index b137e350..9c251f51 100644
+index b137e3501ae..9c251f5105a 100644
 --- a/drivers/misc/mediatek/power/mt6735/fan5405.c
 +++ b/drivers/misc/mediatek/power/mt6735/fan5405.c
 @@ -40,16 +40,17 @@ ONTIM_DEBUG_DECLARE_AND_INIT(charge_ic, charge_ic, 8);
@@ -47633,7 +47535,7 @@ index b137e350..9c251f51 100644
  
  /**********************************************************
 diff --git a/drivers/misc/mediatek/sensors-1.0/accelerometer/Kconfig b/drivers/misc/mediatek/sensors-1.0/accelerometer/Kconfig
-index 00311135..041acdb0 100644
+index 00311135ce0..041acdb0106 100644
 --- a/drivers/misc/mediatek/sensors-1.0/accelerometer/Kconfig
 +++ b/drivers/misc/mediatek/sensors-1.0/accelerometer/Kconfig
 @@ -23,3 +23,4 @@ source "drivers/misc/mediatek/sensors-1.0/accelerometer/mpu6515/Kconfig"
@@ -47642,7 +47544,7 @@ index 00311135..041acdb0 100644
  source "drivers/misc/mediatek/sensors-1.0/accelerometer/stk8baxx/Kconfig"
 +source "drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/Kconfig"
 diff --git a/drivers/misc/mediatek/sensors-1.0/accelerometer/Makefile b/drivers/misc/mediatek/sensors-1.0/accelerometer/Makefile
-index 634cf63d..8524407b 100644
+index 634cf63dbff..8524407bd49 100644
 --- a/drivers/misc/mediatek/sensors-1.0/accelerometer/Makefile
 +++ b/drivers/misc/mediatek/sensors-1.0/accelerometer/Makefile
 @@ -11,3 +11,4 @@ obj-$(CONFIG_MTK_MPU6515A)		+= mpu6515/
@@ -47652,7 +47554,7 @@ index 634cf63d..8524407b 100644
 +obj-$(CONFIG_MTK_LIS3DH) += lis3dh/
 diff --git a/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/Kconfig b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/Kconfig
 new file mode 100644
-index 00000000..ad0f08f9
+index 00000000000..ad0f08f9fb7
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/Kconfig
 @@ -0,0 +1,6 @@
@@ -47664,7 +47566,7 @@ index 00000000..ad0f08f9
 +		If this option is set, it will support LIS3DH Accelerometer.
 diff --git a/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/Makefile b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/Makefile
 new file mode 100644
-index 00000000..7bf71761
+index 00000000000..7bf71761f91
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/Makefile
 @@ -0,0 +1,5 @@
@@ -47675,7 +47577,7 @@ index 00000000..7bf71761
 +
 diff --git a/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/lis3dh.c b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/lis3dh.c
 new file mode 100644
-index 00000000..09a80a73
+index 00000000000..09a80a7378a
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/lis3dh.c
 @@ -0,0 +1,1437 @@
@@ -49118,7 +49020,7 @@ index 00000000..09a80a73
 +MODULE_AUTHOR("Chunlei.Wang@mediatek.com");
 diff --git a/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/lis3dh.h b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/lis3dh.h
 new file mode 100644
-index 00000000..d3a63bae
+index 00000000000..d3a63bae6f3
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/lis3dh.h
 @@ -0,0 +1,70 @@
@@ -49193,7 +49095,7 @@ index 00000000..d3a63bae
 +
 +#endif
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/Kconfig b/drivers/misc/mediatek/sensors-1.0/alsps/Kconfig
-index b710933a..d74c672d 100644
+index b710933a212..d74c672d6b7 100644
 --- a/drivers/misc/mediatek/sensors-1.0/alsps/Kconfig
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/Kconfig
 @@ -23,3 +23,4 @@ source "drivers/misc/mediatek/sensors-1.0/alsps/epl2182/Kconfig"
@@ -49202,7 +49104,7 @@ index b710933a..d74c672d 100644
  source "drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x/Kconfig"
 +source "drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/Kconfig"
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/Makefile b/drivers/misc/mediatek/sensors-1.0/alsps/Makefile
-index a06a0afe..ff0e55e0 100644
+index a06a0afe2f1..ff0e55e0539 100644
 --- a/drivers/misc/mediatek/sensors-1.0/alsps/Makefile
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/Makefile
 @@ -12,3 +12,4 @@ obj-$(CONFIG_MTK_EPL2182)	+=  epl2182/
@@ -49211,7 +49113,7 @@ index a06a0afe..ff0e55e0 100644
  obj-$(CONFIG_MTK_STK3X1X_OT)	+=  stk3x1x/
 +obj-$(CONFIG_MTK_STK3X1X_NEW) += stk3x1x-new/
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/epl2182/epl2182.c b/drivers/misc/mediatek/sensors-1.0/alsps/epl2182/epl2182.c
-index 9fcaa78d..29b9c495 100644
+index 9fcaa78daa2..29b9c495766 100644
 --- a/drivers/misc/mediatek/sensors-1.0/alsps/epl2182/epl2182.c
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/epl2182/epl2182.c
 @@ -73,7 +73,7 @@ struct epl_raw_data {
@@ -49273,7 +49175,7 @@ index 9fcaa78d..29b9c495 100644
  	if (!obj) {
  		err = -ENOMEM;
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/inc/cust_alsps.h b/drivers/misc/mediatek/sensors-1.0/alsps/inc/cust_alsps.h
-index a220a1fd..4a929d14 100644
+index a220a1fd077..4a929d14532 100644
 --- a/drivers/misc/mediatek/sensors-1.0/alsps/inc/cust_alsps.h
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/inc/cust_alsps.h
 @@ -33,10 +33,17 @@ struct alsps_hw {
@@ -49296,7 +49198,7 @@ index a220a1fd..4a929d14 100644
  	int als_power_vio_id;                                   /*!< the VIO power id of the als chip */
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/Kconfig b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/Kconfig
 new file mode 100644
-index 00000000..8336b75c
+index 00000000000..8336b75c4f4
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/Kconfig
 @@ -0,0 +1,9 @@
@@ -49311,7 +49213,7 @@ index 00000000..8336b75c
 +	and light sensor stk3x1x.
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/Makefile b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/Makefile
 new file mode 100644
-index 00000000..681fab98
+index 00000000000..681fab9869b
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/Makefile
 @@ -0,0 +1,5 @@
@@ -49322,7 +49224,7 @@ index 00000000..681fab98
 +
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/stk3x1x.c b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/stk3x1x.c
 new file mode 100644
-index 00000000..e7497858
+index 00000000000..e7497858c1f
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/stk3x1x.c
 @@ -0,0 +1,2749 @@
@@ -52077,7 +51979,7 @@ index 00000000..e7497858
 +MODULE_LICENSE("GPL");
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/stk3x1x.h b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/stk3x1x.h
 new file mode 100644
-index 00000000..c87ce5aa
+index 00000000000..c87ce5aac57
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/stk3x1x.h
 @@ -0,0 +1,129 @@
@@ -52211,7 +52113,7 @@ index 00000000..c87ce5aa
 +
 +#endif
 diff --git a/drivers/misc/mediatek/sensors-1.0/hwmon/sensor_dts/sensor_dts.c b/drivers/misc/mediatek/sensors-1.0/hwmon/sensor_dts/sensor_dts.c
-index 8fc383a1..dbf71d73 100644
+index 8fc383a1e67..dbf71d73c95 100644
 --- a/drivers/misc/mediatek/sensors-1.0/hwmon/sensor_dts/sensor_dts.c
 +++ b/drivers/misc/mediatek/sensors-1.0/hwmon/sensor_dts/sensor_dts.c
 @@ -93,6 +93,14 @@ int get_alsps_dts_func(struct device_node *node, struct alsps_hw *hw)
@@ -52270,7 +52172,7 @@ index 8fc383a1..dbf71d73 100644
  	ret = of_property_read_u32_array(node, "is_batch_supported_ps", is_batch_supported_ps,
  		ARRAY_SIZE(is_batch_supported_ps));
 diff --git a/drivers/misc/mediatek/sensors-1.0/magnetometer/Kconfig b/drivers/misc/mediatek/sensors-1.0/magnetometer/Kconfig
-index 55056eef..7f5c3b76 100644
+index 55056eef4ad..7f5c3b76d3b 100644
 --- a/drivers/misc/mediatek/sensors-1.0/magnetometer/Kconfig
 +++ b/drivers/misc/mediatek/sensors-1.0/magnetometer/Kconfig
 @@ -18,3 +18,4 @@ config CUSTOM_KERNEL_MAGNETOMETER
@@ -52279,7 +52181,7 @@ index 55056eef..7f5c3b76 100644
  source "drivers/misc/mediatek/sensors-1.0/magnetometer/akm8963/Kconfig"
 +source "drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/Kconfig"
 diff --git a/drivers/misc/mediatek/sensors-1.0/magnetometer/Makefile b/drivers/misc/mediatek/sensors-1.0/magnetometer/Makefile
-index f22ecdb3..391b8637 100644
+index f22ecdb35f6..391b8637bb6 100644
 --- a/drivers/misc/mediatek/sensors-1.0/magnetometer/Makefile
 +++ b/drivers/misc/mediatek/sensors-1.0/magnetometer/Makefile
 @@ -9,3 +9,4 @@ obj-y   +=  mag_factory.o
@@ -52289,7 +52191,7 @@ index f22ecdb3..391b8637 100644
 +obj-$(CONFIG_MTK_QMCX983) += qmcX983/
 diff --git a/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/Kconfig b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/Kconfig
 new file mode 100644
-index 00000000..a47c192f
+index 00000000000..a47c192f950
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/Kconfig
 @@ -0,0 +1,9 @@
@@ -52304,7 +52206,7 @@ index 00000000..a47c192f
 +          QMCX983 magnetometer.
 diff --git a/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/Makefile b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/Makefile
 new file mode 100644
-index 00000000..a0a5c9c2
+index 00000000000..a0a5c9c2a1d
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/Makefile
 @@ -0,0 +1,3 @@
@@ -52313,7 +52215,7 @@ index 00000000..a0a5c9c2
 +obj-y	:=  qmcX983.o
 diff --git a/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/qmcX983.c b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/qmcX983.c
 new file mode 100644
-index 00000000..6b4958c8
+index 00000000000..6b4958c8c80
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/qmcX983.c
 @@ -0,0 +1,1895 @@
@@ -54214,7 +54116,7 @@ index 00000000..6b4958c8
 +MODULE_VERSION(DRIVER_VERSION);
 diff --git a/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/qmcX983.h b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/qmcX983.h
 new file mode 100644
-index 00000000..66c0d6a2
+index 00000000000..66c0d6a212d
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/qmcX983.h
 @@ -0,0 +1,178 @@
@@ -54398,7 +54300,7 @@ index 00000000..66c0d6a2
 +
 diff --git a/drivers/misc/mediatek/touchkey/Kconfig b/drivers/misc/mediatek/touchkey/Kconfig
 new file mode 100644
-index 00000000..08069af4
+index 00000000000..08069af40f5
 --- /dev/null
 +++ b/drivers/misc/mediatek/touchkey/Kconfig
 @@ -0,0 +1,11 @@
@@ -54416,14 +54318,14 @@ index 00000000..08069af4
 \ No newline at end of file
 diff --git a/drivers/misc/mediatek/touchkey/Makefile b/drivers/misc/mediatek/touchkey/Makefile
 new file mode 100644
-index 00000000..4ccb07b9
+index 00000000000..4ccb07b9e7e
 --- /dev/null
 +++ b/drivers/misc/mediatek/touchkey/Makefile
 @@ -0,0 +1 @@
 +obj-$(CONFIG_MTK_TOUCHKEY_AW9201_SUPPORT) += aw9201/
 diff --git a/drivers/misc/mediatek/touchkey/aw9201/Makefile b/drivers/misc/mediatek/touchkey/aw9201/Makefile
 new file mode 100644
-index 00000000..be7a06de
+index 00000000000..be7a06de2c5
 --- /dev/null
 +++ b/drivers/misc/mediatek/touchkey/aw9201/Makefile
 @@ -0,0 +1 @@
@@ -54431,7 +54333,7 @@ index 00000000..be7a06de
 \ No newline at end of file
 diff --git a/drivers/misc/mediatek/touchkey/aw9201/aw9201.c b/drivers/misc/mediatek/touchkey/aw9201/aw9201.c
 new file mode 100644
-index 00000000..4622b26c
+index 00000000000..4622b26c5c0
 --- /dev/null
 +++ b/drivers/misc/mediatek/touchkey/aw9201/aw9201.c
 @@ -0,0 +1,752 @@
@@ -55188,7 +55090,7 @@ index 00000000..4622b26c
 +MODULE_DESCRIPTION("AW9201 Touchkey Driver");
 +MODULE_AUTHOR("<lijunjiea@awinic.com>");
 diff --git a/drivers/misc/mediatek/video/common/aal20/ddp_pwm.c b/drivers/misc/mediatek/video/common/aal20/ddp_pwm.c
-index 9f83202c..43ca224a 100644
+index 9f83202cd38..43ca224aab9 100644
 --- a/drivers/misc/mediatek/video/common/aal20/ddp_pwm.c
 +++ b/drivers/misc/mediatek/video/common/aal20/ddp_pwm.c
 @@ -387,6 +387,10 @@ int disp_bls_set_backlight(int level_1024)
@@ -55203,7 +55105,7 @@ index 9f83202c..43ca224a 100644
  }
  
 diff --git a/drivers/misc/mediatek/video/mt6735/ddp_dsi.c b/drivers/misc/mediatek/video/mt6735/ddp_dsi.c
-index bf66b77a..f7cb5223 100644
+index bf66b77aa06..21bc7e75e03 100644
 --- a/drivers/misc/mediatek/video/mt6735/ddp_dsi.c
 +++ b/drivers/misc/mediatek/video/mt6735/ddp_dsi.c
 @@ -1233,7 +1233,7 @@ DSI_STATUS DSI_TXRX_Control(DISP_MODULE_ENUM module, cmdqRecHandle cmdq,
@@ -55230,7 +55132,7 @@ index bf66b77a..f7cb5223 100644
  
  static void lcm_rar(uint32_t ms)
 diff --git a/drivers/power/mediatek/battery_common.c b/drivers/power/mediatek/battery_common.c
-index c7b283ce..cfb6a4ee 100644
+index c7b283ce493..cfb6a4eecff 100644
 --- a/drivers/power/mediatek/battery_common.c
 +++ b/drivers/power/mediatek/battery_common.c
 @@ -646,7 +646,11 @@ static int battery_get_property(struct power_supply *psy,
@@ -55416,7 +55318,7 @@ index c7b283ce..cfb6a4ee 100644
  	}
  #endif
 diff --git a/drivers/power/mediatek/battery_meter.c b/drivers/power/mediatek/battery_meter.c
-index 68e06eb2..34e49e36 100644
+index 68e06eb2a9b..34e49e36dcb 100644
 --- a/drivers/power/mediatek/battery_meter.c
 +++ b/drivers/power/mediatek/battery_meter.c
 @@ -821,23 +821,21 @@ int BattThermistorConverTemp(int Res)
@@ -55675,7 +55577,7 @@ index 68e06eb2..34e49e36 100644
  				bm_print(BM_LOG_CRTI,
  					 "[FGADC] gFG_capacity_by_v=%d, gFG_capacity_by_sw_ocv=%d use HWOCV\n",
 diff --git a/drivers/power/mediatek/switch_charging.c b/drivers/power/mediatek/switch_charging.c
-index e49cfdec..d37903b2 100644
+index e49cfdec5d8..d37903b21e3 100644
 --- a/drivers/power/mediatek/switch_charging.c
 +++ b/drivers/power/mediatek/switch_charging.c
 @@ -466,55 +466,10 @@ unsigned int set_chr_input_current_limit(int current_limit)
@@ -55737,7 +55639,7 @@ index e49cfdec..d37903b2 100644
  
  int mtk_chr_reset_aicr_upper_bound(void)
 diff --git a/drivers/usb/gadget/function/f_mtp.c b/drivers/usb/gadget/function/f_mtp.c
-index f111552e..1d100107 100644
+index f111552e03f..1d10010701a 100644
 --- a/drivers/usb/gadget/function/f_mtp.c
 +++ b/drivers/usb/gadget/function/f_mtp.c
 @@ -584,7 +584,7 @@ static ssize_t mtp_read(struct file *fp, char __user *buf,
@@ -55750,7 +55652,7 @@ index f111552e..1d100107 100644
  			mtp_dbg_dump();
  
 diff --git a/scripts/drvgen/drvgen.mk b/scripts/drvgen/drvgen.mk
-index 17f5f7b7..4e7a96f2 100644
+index 17f5f7b7273..4e7a96f2712 100644
 --- a/scripts/drvgen/drvgen.mk
 +++ b/scripts/drvgen/drvgen.mk
 @@ -70,7 +70,7 @@ DRVGEN_TOOL := $(srctree)/tools/dct/DrvGen.py
@@ -55763,7 +55665,7 @@ index 17f5f7b7..4e7a96f2 100644
  		prj_path=$(DRVGEN_OUT)/$$base_prj ;\
  		dws_path=$(DWS_PREFIX)$$base_prj$(DWS_SUFFIX) ;\
 diff --git a/tools/dct/old_dct/EINT_YuSu.cmp b/tools/dct/old_dct/EINT_YuSu.cmp
-index cbf62cde..a9bb5aa1 100644
+index cbf62cde6c4..a9bb5aa19c2 100644
 --- a/tools/dct/old_dct/EINT_YuSu.cmp
 +++ b/tools/dct/old_dct/EINT_YuSu.cmp
 @@ -30,6 +30,7 @@ OTG_IDDIG
@@ -55775,7 +55677,7 @@ index cbf62cde..a9bb5aa1 100644
  MT6329_PMIC
  EINT_HDMI_HPD
 diff --git a/tools/dct/old_dct/GPIO_YuSu.cmp b/tools/dct/old_dct/GPIO_YuSu.cmp
-index 3c877ce4..c14e0fe1 100644
+index 3c877ce470e..c14e0fe13e8 100644
 --- a/tools/dct/old_dct/GPIO_YuSu.cmp
 +++ b/tools/dct/old_dct/GPIO_YuSu.cmp
 @@ -549,6 +549,7 @@ GPIO_SMARTPA_LDO_EN_PIN
@@ -55798,7 +55700,7 @@ index 3c877ce4..c14e0fe1 100644
  GPIO_CAMERA_VCAMA_ENABLE_PIN
  GPIO_USB_REDRI_SW_C1_PIN
 diff --git a/tools/dct/old_dct/I2C_YuSu.cmp b/tools/dct/old_dct/I2C_YuSu.cmp
-index bd10a4b6..dbe8a552 100644
+index bd10a4b6c13..dbe8a552b50 100644
 --- a/tools/dct/old_dct/I2C_YuSu.cmp
 +++ b/tools/dct/old_dct/I2C_YuSu.cmp
 @@ -19,6 +19,12 @@ STROBE_MAIN_2
@@ -55821,6 +55723,3 @@ index bd10a4b6..dbe8a552 100644
 -#endif /* _CUST_I2C_H */
 \ No newline at end of file
 +#endif /* _CUST_I2C_H */
--- 
-2.20.1
-
