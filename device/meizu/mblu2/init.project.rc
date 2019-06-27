@@ -1,0 +1,14 @@
+# MTK project .rc configure
+
+on init
+    mkdir /mnt/media_rw/usbotg 0700 media_rw media_rw
+    mkdir /storage/usbotg 0700 root root
+
+on post-fs-data
+# Lens
+    chmod 0660 /dev/MAINAF
+    chown system camera /dev/MAINAF
+
+# ScreenComm
+    chown system system /proc/smb/ScreenComm
+    chmod 0660 /proc/smb/ScreenComm

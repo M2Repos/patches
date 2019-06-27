@@ -1,14 +1,14 @@
-From a08eb576321a1a042c23cc4015dac284d1df96d9 Mon Sep 17 00:00:00 2001
-From: Dinolek <dinolek@o2.pl>
-Date: Sat, 4 May 2019 00:18:24 +0200
-Subject: [PATCH] mblu2: Add device specific changes
+From 7491ac2dc07889ca53685f57a87484cc2086bdeb Mon Sep 17 00:00:00 2001
+From: Dinolek <18579460+Dinolek@users.noreply.github.com>
+Date: Mon, 24 Jun 2019 20:07:50 +0200
+Subject: [PATCH] kernel-3.18
 
 ---
  Makefile                                      |    2 +-
  arch/arm64/boot/dts/mblu2.dts                 |  756 +++
  arch/arm64/boot/dts/mblu2_cust.dtsi           |  279 +
  arch/arm64/boot/dts/mt6735.dts                |  886 ---
- arch/arm64/configs/mblu2_defconfig            | 3785 +++++++++++
+ arch/arm64/configs/mblu2_defconfig            | 3821 +++++++++++
  drivers/input/keyboard/mediatek/kpd.c         |    2 +-
  .../input/touchscreen/mediatek/FT5446/Kconfig |   86 +
  .../touchscreen/mediatek/FT5446/Makefile      |   18 +
@@ -115,7 +115,7 @@ Subject: [PATCH] mblu2: Add device specific changes
  .../sensors-1.0/magnetometer/Makefile         |    1 +
  .../sensors-1.0/magnetometer/qmcX983/Kconfig  |    9 +
  .../sensors-1.0/magnetometer/qmcX983/Makefile |    3 +
- .../magnetometer/qmcX983/qmcX983.c            | 1895 ++++++
+ .../magnetometer/qmcX983/qmcX983.c            | 1901 ++++++
  .../magnetometer/qmcX983/qmcX983.h            |  178 +
  drivers/misc/mediatek/touchkey/Kconfig        |   11 +
  drivers/misc/mediatek/touchkey/Makefile       |    1 +
@@ -128,10 +128,11 @@ Subject: [PATCH] mblu2: Add device specific changes
  drivers/power/mediatek/switch_charging.c      |   49 +-
  drivers/usb/gadget/function/f_mtp.c           |    2 +-
  scripts/drvgen/drvgen.mk                      |    2 +-
+ tools/dct/DrvGen.py                           |    2 +-
  tools/dct/old_dct/EINT_YuSu.cmp               |    1 +
  tools/dct/old_dct/GPIO_YuSu.cmp               |    5 +
  tools/dct/old_dct/I2C_YuSu.cmp                |    8 +-
- 127 files changed, 48437 insertions(+), 5078 deletions(-)
+ 128 files changed, 48480 insertions(+), 5079 deletions(-)
  create mode 100644 arch/arm64/boot/dts/mblu2.dts
  create mode 100644 arch/arm64/boot/dts/mblu2_cust.dtsi
  create mode 100644 arch/arm64/configs/mblu2_defconfig
@@ -199,10 +200,10 @@ Subject: [PATCH] mblu2: Add device specific changes
  create mode 100644 drivers/misc/mediatek/touchkey/aw9201/aw9201.c
 
 diff --git a/Makefile b/Makefile
-index d1a2a999d0b..5711d53ac9c 100644
+index b8084b73..45881202 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -395,7 +395,7 @@ LINUXINCLUDE    := \
+@@ -394,7 +394,7 @@ LINUXINCLUDE    := \
  		-Iarch/$(hdr-arch)/include/generated \
  		$(if $(KBUILD_SRC), -I$(srctree)/include) \
  		-Iinclude \
@@ -213,7 +214,7 @@ index d1a2a999d0b..5711d53ac9c 100644
  
 diff --git a/arch/arm64/boot/dts/mblu2.dts b/arch/arm64/boot/dts/mblu2.dts
 new file mode 100644
-index 00000000000..2c6fe4d2ad2
+index 00000000..2c6fe4d2
 --- /dev/null
 +++ b/arch/arm64/boot/dts/mblu2.dts
 @@ -0,0 +1,756 @@
@@ -975,7 +976,7 @@ index 00000000000..2c6fe4d2ad2
 +};*/
 diff --git a/arch/arm64/boot/dts/mblu2_cust.dtsi b/arch/arm64/boot/dts/mblu2_cust.dtsi
 new file mode 100644
-index 00000000000..152697cfd1a
+index 00000000..152697cf
 --- /dev/null
 +++ b/arch/arm64/boot/dts/mblu2_cust.dtsi
 @@ -0,0 +1,279 @@
@@ -1259,10 +1260,10 @@ index 00000000000..152697cfd1a
 +
 +
 diff --git a/arch/arm64/boot/dts/mt6735.dts b/arch/arm64/boot/dts/mt6735.dts
-index cb64268bc02..7ceee103c8c 100644
+index d4dd14d6..7b4ee292 100644
 --- a/arch/arm64/boot/dts/mt6735.dts
 +++ b/arch/arm64/boot/dts/mt6735.dts
-@@ -2084,845 +2084,6 @@ initrd=0x44000000,0x300000 loglevel=8 androidboot.hardware=mt6735";
+@@ -2098,845 +2098,6 @@ firmware_class.path=/vendor/firmware";
  
  		bat_meter: bat_meter{
  			compatible = "mediatek,bat_meter";
@@ -2108,7 +2109,7 @@ index cb64268bc02..7ceee103c8c 100644
  		};
  
  		BAT_NOTIFY {
-@@ -2931,53 +2092,6 @@ initrd=0x44000000,0x300000 loglevel=8 androidboot.hardware=mt6735";
+@@ -2945,53 +2106,6 @@ firmware_class.path=/vendor/firmware";
  
  		bat_comm: bat_comm {
  			compatible = "mediatek,battery";
@@ -2164,13 +2165,13 @@ index cb64268bc02..7ceee103c8c 100644
  			compatible = "mediatek, dsi_te_1-eint";
 diff --git a/arch/arm64/configs/mblu2_defconfig b/arch/arm64/configs/mblu2_defconfig
 new file mode 100644
-index 00000000000..988a5e1821d
+index 00000000..fbeb30b6
 --- /dev/null
 +++ b/arch/arm64/configs/mblu2_defconfig
-@@ -0,0 +1,3785 @@
+@@ -0,0 +1,3821 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/arm64 3.18.79 Kernel Configuration
++# Linux/arm64 3.18.119 Kernel Configuration
 +#
 +CONFIG_ARM64=y
 +CONFIG_64BIT=y
@@ -2203,6 +2204,7 @@ index 00000000000..988a5e1821d
 +CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
 +CONFIG_IRQ_WORK=y
 +CONFIG_BUILDTIME_EXTABLE_SORT=y
++CONFIG_THREAD_INFO_IN_TASK=y
 +
 +#
 +# General setup
@@ -2354,6 +2356,7 @@ index 00000000000..988a5e1821d
 +CONFIG_SLUB=y
 +# CONFIG_SLOB is not set
 +CONFIG_SLUB_CPU_PARTIAL=y
++CONFIG_SYSTEM_TRUSTED_KEYRING=y
 +CONFIG_PROFILING=y
 +CONFIG_TRACEPOINTS=y
 +# CONFIG_JUMP_LABEL is not set
@@ -2431,6 +2434,7 @@ index 00000000000..988a5e1821d
 +CONFIG_DEFAULT_CFQ=y
 +# CONFIG_DEFAULT_NOOP is not set
 +CONFIG_DEFAULT_IOSCHED="cfq"
++CONFIG_ASN1=y
 +CONFIG_UNINLINE_SPIN_UNLOCK=y
 +CONFIG_ARCH_SUPPORTS_ATOMIC_RMW=y
 +CONFIG_MUTEX_SPIN_ON_OWNER=y
@@ -2691,7 +2695,7 @@ index 00000000000..988a5e1821d
 +CONFIG_IP_PIMSM_V1=y
 +CONFIG_IP_PIMSM_V2=y
 +CONFIG_SYN_COOKIES=y
-+# CONFIG_NET_IPVTI is not set
++CONFIG_NET_IPVTI=y
 +# CONFIG_NET_UDP_TUNNEL is not set
 +# CONFIG_NET_FOU is not set
 +# CONFIG_GENEVE is not set
@@ -2726,11 +2730,11 @@ index 00000000000..988a5e1821d
 +CONFIG_INET6_XFRM_MODE_TUNNEL=y
 +CONFIG_INET6_XFRM_MODE_BEET=y
 +CONFIG_INET6_XFRM_MODE_ROUTEOPTIMIZATION=y
-+# CONFIG_IPV6_VTI is not set
++CONFIG_IPV6_VTI=y
 +CONFIG_IPV6_SIT=y
 +CONFIG_IPV6_SIT_6RD=y
 +CONFIG_IPV6_NDISC_NODETYPE=y
-+# CONFIG_IPV6_TUNNEL is not set
++CONFIG_IPV6_TUNNEL=y
 +# CONFIG_IPV6_GRE is not set
 +CONFIG_IPV6_MULTIPLE_TABLES=y
 +CONFIG_IPV6_SUBTREES=y
@@ -3038,6 +3042,7 @@ index 00000000000..988a5e1821d
 +CONFIG_NET_CLS_IND=y
 +CONFIG_NET_SCH_FIFO=y
 +# CONFIG_DCB is not set
++# CONFIG_DNS_RESOLVER is not set
 +# CONFIG_BATMAN_ADV is not set
 +# CONFIG_OPENVSWITCH is not set
 +# CONFIG_VSOCKETS is not set
@@ -3202,10 +3207,6 @@ index 00000000000..988a5e1821d
 +# CONFIG_MTD_UBI is not set
 +CONFIG_DTC=y
 +CONFIG_OF=y
-+
-+#
-+# Device Tree and Open Firmware support
-+#
 +# CONFIG_OF_SELFTEST is not set
 +CONFIG_OF_FLATTREE=y
 +CONFIG_OF_EARLY_FLATTREE=y
@@ -3214,6 +3215,7 @@ index 00000000000..988a5e1821d
 +CONFIG_OF_NET=y
 +CONFIG_OF_MTD=y
 +CONFIG_OF_RESERVED_MEM=y
++# CONFIG_OF_OVERLAY is not set
 +# CONFIG_PARPORT is not set
 +CONFIG_BLK_DEV=y
 +# CONFIG_BLK_DEV_NULL_BLK is not set
@@ -3376,7 +3378,7 @@ index 00000000000..988a5e1821d
 +# CONFIG_MTK_FLASHLIGHT_USE_MODULE is not set
 +# CONFIG_RT_FLASHLIGHT is not set
 +CONFIG_MTK_GPU_SUPPORT=y
-+CONFIG_MTK_GPU_VERSION="mali midgard r18p0"
++CONFIG_MTK_GPU_VERSION="mali midgard r26p0"
 +CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT=y
 +# CONFIG_MTK_GPU_R5P0 is not set
 +# CONFIG_MTK_GPU_SAPPHIRE_LITE is not set
@@ -3711,6 +3713,9 @@ index 00000000000..988a5e1821d
 +# CONFIG_MTK_SM100 is not set
 +# CONFIG_MTK_MT6750TT is not set
 +# CONFIG_MTK_AB_OTA_UPDATER is not set
++CONFIG_MTK_GROUP_ENABLE_VERITY=y
++# CONFIG_SYSTEM_AS_ROOT is not set
++CONFIG_MTK_OTA_DEVICE=y
 +CONFIG_MTK_AEE_FEATURE=y
 +CONFIG_MTK_AEE_AED=y
 +CONFIG_MTK_AEE_IPANIC=y
@@ -3735,7 +3740,6 @@ index 00000000000..988a5e1821d
 +CONFIG_MTK_SEC_MODEM_NVRAM_ANTI_CLONE=y
 +CONFIG_MTK_MLOG=y
 +CONFIG_MTPROF=y
-+CONFIG_MTK_LOCK_DEBUG=y
 +# CONFIG_MTPROF_CPUTIME is not set
 +# CONFIG_MTK_WQ_DEBUG is not set
 +# CONFIG_MT_SCHED_MONITOR is not set
@@ -3835,11 +3839,20 @@ index 00000000000..988a5e1821d
 +CONFIG_HAVE_PATA_PLATFORM=y
 +# CONFIG_ATA is not set
 +CONFIG_MD=y
-+# CONFIG_BLK_DEV_MD is not set
++CONFIG_BLK_DEV_MD=y
++CONFIG_MD_AUTODETECT=y
++CONFIG_MD_LINEAR=y
++# CONFIG_MD_RAID0 is not set
++# CONFIG_MD_RAID1 is not set
++# CONFIG_MD_RAID10 is not set
++# CONFIG_MD_RAID456 is not set
++# CONFIG_MD_MULTIPATH is not set
++# CONFIG_MD_FAULTY is not set
 +# CONFIG_BCACHE is not set
 +CONFIG_BLK_DEV_DM_BUILTIN=y
 +CONFIG_BLK_DEV_DM=y
 +# CONFIG_DM_DEBUG is not set
++CONFIG_DM_BUFIO=y
 +CONFIG_DM_CRYPT=y
 +# CONFIG_DM_SNAPSHOT is not set
 +# CONFIG_DM_THIN_PROVISIONING is not set
@@ -3852,10 +3865,14 @@ index 00000000000..988a5e1821d
 +# CONFIG_DM_DELAY is not set
 +CONFIG_DM_UEVENT=y
 +# CONFIG_DM_FLAKEY is not set
-+# CONFIG_DM_VERITY is not set
-+# CONFIG_DM_VERITY_HASH_PREFETCH_MIN_SIZE_128 is not set
++CONFIG_DM_VERITY=y
++CONFIG_DM_VERITY_HASH_PREFETCH_MIN_SIZE_128=y
++CONFIG_DM_VERITY_HASH_PREFETCH_MIN_SIZE=128
++CONFIG_DM_ANDROID_VERITY=y
++CONFIG_DM_VERITY_FEC=y
 +# CONFIG_DM_SWITCH is not set
 +# CONFIG_DM_LOG_WRITES is not set
++# CONFIG_DM_ANDROID_VERITY_AT_MOST_ONCE_DEFAULT_ENABLED is not set
 +# CONFIG_TARGET_CORE is not set
 +CONFIG_NETDEVICES=y
 +CONFIG_NET_CORE=y
@@ -5006,7 +5023,7 @@ index 00000000000..988a5e1821d
 +# CONFIG_USB_GPIO_VBUS is not set
 +# CONFIG_USB_ISP1301 is not set
 +# CONFIG_USB_ULPI is not set
-+# CONFIG_DUAL_ROLE_USB_INTF is not set
++CONFIG_DUAL_ROLE_USB_INTF=y
 +CONFIG_USB_GADGET=y
 +# CONFIG_USB_GADGET_DEBUG is not set
 +# CONFIG_USB_GADGET_DEBUG_FILES is not set
@@ -5399,7 +5416,8 @@ index 00000000000..988a5e1821d
 +CONFIG_EXT4_USE_FOR_EXT23=y
 +# CONFIG_EXT4_FS_POSIX_ACL is not set
 +CONFIG_EXT4_FS_SECURITY=y
-+# CONFIG_EXT4_ENCRYPTION is not set
++CONFIG_EXT4_ENCRYPTION=y
++CONFIG_EXT4_FS_ENCRYPTION=y
 +# CONFIG_EXT4_DEBUG is not set
 +CONFIG_JBD2=y
 +# CONFIG_JBD2_DEBUG is not set
@@ -5473,6 +5491,7 @@ index 00000000000..988a5e1821d
 +CONFIG_MISC_FILESYSTEMS=y
 +# CONFIG_ADFS_FS is not set
 +# CONFIG_AFFS_FS is not set
++# CONFIG_ECRYPT_FS is not set
 +CONFIG_SDCARD_FS=y
 +# CONFIG_HFS_FS is not set
 +# CONFIG_HFSPLUS_FS is not set
@@ -5729,14 +5748,19 @@ index 00000000000..988a5e1821d
 +# CONFIG_STRICT_DEVMEM is not set
 +# CONFIG_PID_IN_CONTEXTIDR is not set
 +# CONFIG_ARM64_RANDOMIZE_TEXT_OFFSET is not set
-+# CONFIG_DEBUG_SET_MODULE_RONX is not set
++CONFIG_DEBUG_SET_MODULE_RONX=y
 +CONFIG_DEBUG_RODATA=y
 +# CONFIG_DEBUG_ALIGN_RODATA is not set
 +
 +#
 +# Security options
 +#
-+# CONFIG_KEYS is not set
++CONFIG_KEYS=y
++CONFIG_KEYS_COMPAT=y
++# CONFIG_PERSISTENT_KEYRINGS is not set
++# CONFIG_BIG_KEYS is not set
++CONFIG_ENCRYPTED_KEYS=y
++# CONFIG_KEYS_DEBUG_PROC_KEYS is not set
 +# CONFIG_SECURITY_DMESG_RESTRICT is not set
 +CONFIG_SECURITY_PERF_EVENTS_RESTRICT=y
 +CONFIG_SECURITY=y
@@ -5762,6 +5786,7 @@ index 00000000000..988a5e1821d
 +# CONFIG_SECURITY_APPARMOR is not set
 +# CONFIG_SECURITY_YAMA is not set
 +CONFIG_INTEGRITY=y
++# CONFIG_INTEGRITY_SIGNATURE is not set
 +CONFIG_INTEGRITY_AUDIT=y
 +# CONFIG_IMA is not set
 +# CONFIG_EVM is not set
@@ -5788,7 +5813,7 @@ index 00000000000..988a5e1821d
 +CONFIG_CRYPTO_MANAGER2=y
 +# CONFIG_CRYPTO_USER is not set
 +CONFIG_CRYPTO_MANAGER_DISABLE_TESTS=y
-+# CONFIG_CRYPTO_GF128MUL is not set
++CONFIG_CRYPTO_GF128MUL=y
 +CONFIG_CRYPTO_NULL=y
 +# CONFIG_CRYPTO_PCRYPT is not set
 +CONFIG_CRYPTO_WORKQUEUE=y
@@ -5802,7 +5827,7 @@ index 00000000000..988a5e1821d
 +# Authenticated Encryption with Associated Data
 +#
 +# CONFIG_CRYPTO_CCM is not set
-+# CONFIG_CRYPTO_GCM is not set
++CONFIG_CRYPTO_GCM=y
 +CONFIG_CRYPTO_SEQIV=y
 +
 +#
@@ -5810,11 +5835,11 @@ index 00000000000..988a5e1821d
 +#
 +CONFIG_CRYPTO_CBC=y
 +CONFIG_CRYPTO_CTR=y
-+# CONFIG_CRYPTO_CTS is not set
++CONFIG_CRYPTO_CTS=y
 +CONFIG_CRYPTO_ECB=y
 +# CONFIG_CRYPTO_LRW is not set
 +# CONFIG_CRYPTO_PCBC is not set
-+# CONFIG_CRYPTO_XTS is not set
++CONFIG_CRYPTO_XTS=y
 +
 +#
 +# Hash modes
@@ -5830,7 +5855,7 @@ index 00000000000..988a5e1821d
 +CONFIG_CRYPTO_CRC32C=y
 +# CONFIG_CRYPTO_CRC32 is not set
 +# CONFIG_CRYPTO_CRCT10DIF is not set
-+# CONFIG_CRYPTO_GHASH is not set
++CONFIG_CRYPTO_GHASH=y
 +# CONFIG_CRYPTO_MD4 is not set
 +CONFIG_CRYPTO_MD5=y
 +# CONFIG_CRYPTO_MICHAEL_MIC is not set
@@ -5861,6 +5886,8 @@ index 00000000000..988a5e1821d
 +# CONFIG_CRYPTO_SALSA20 is not set
 +# CONFIG_CRYPTO_SEED is not set
 +# CONFIG_CRYPTO_SERPENT is not set
++# CONFIG_CRYPTO_SPECK is not set
++# CONFIG_CRYPTO_SPECK_NEON is not set
 +# CONFIG_CRYPTO_TEA is not set
 +CONFIG_CRYPTO_TWOFISH=y
 +CONFIG_CRYPTO_TWOFISH_COMMON=y
@@ -5882,7 +5909,13 @@ index 00000000000..988a5e1821d
 +# CONFIG_CRYPTO_DRBG_MENU is not set
 +# CONFIG_CRYPTO_USER_API_HASH is not set
 +# CONFIG_CRYPTO_USER_API_SKCIPHER is not set
++CONFIG_CRYPTO_HASH_INFO=y
 +# CONFIG_CRYPTO_HW is not set
++CONFIG_ASYMMETRIC_KEY_TYPE=y
++CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE=y
++CONFIG_PUBLIC_KEY_ALGO_RSA=y
++CONFIG_X509_CERTIFICATE_PARSER=y
++# CONFIG_PKCS7_MESSAGE_PARSER is not set
 +CONFIG_ARM64_CRYPTO=y
 +# CONFIG_CRYPTO_SHA1_ARM64_CE is not set
 +CONFIG_CRYPTO_SHA2_ARM64_CE=y
@@ -5939,6 +5972,7 @@ index 00000000000..988a5e1821d
 +CONFIG_TEXTSEARCH_KMP=y
 +CONFIG_TEXTSEARCH_BM=y
 +CONFIG_TEXTSEARCH_FSM=y
++CONFIG_ASSOCIATIVE_ARRAY=y
 +CONFIG_HAS_IOMEM=y
 +CONFIG_HAS_DMA=y
 +CONFIG_CPU_RMAP=y
@@ -5946,15 +5980,18 @@ index 00000000000..988a5e1821d
 +CONFIG_NLATTR=y
 +CONFIG_ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE=y
 +# CONFIG_AVERAGE is not set
++CONFIG_CLZ_TAB=y
 +# CONFIG_CORDIC is not set
 +# CONFIG_DDR is not set
++CONFIG_MPILIB=y
 +CONFIG_LIBFDT=y
++CONFIG_OID_REGISTRY=y
 +CONFIG_FONT_SUPPORT=y
 +CONFIG_FONT_8x16=y
 +CONFIG_FONT_AUTOSELECT=y
 +CONFIG_ARCH_HAS_SG_CHAIN=y
 diff --git a/drivers/input/keyboard/mediatek/kpd.c b/drivers/input/keyboard/mediatek/kpd.c
-index 93b9f52dc52..ae3826862ee 100644
+index 93b9f52d..ae382686 100644
 --- a/drivers/input/keyboard/mediatek/kpd.c
 +++ b/drivers/input/keyboard/mediatek/kpd.c
 @@ -951,7 +951,7 @@ static int kpd_pdrv_suspend(struct platform_device *pdev, pm_message_t state)
@@ -5968,7 +6005,7 @@ index 93b9f52dc52..ae3826862ee 100644
  #endif
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/Kconfig b/drivers/input/touchscreen/mediatek/FT5446/Kconfig
 new file mode 100644
-index 00000000000..bc78c5baf50
+index 00000000..bc78c5ba
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/Kconfig
 @@ -0,0 +1,86 @@
@@ -6061,7 +6098,7 @@ index 00000000000..bc78c5baf50
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/Makefile b/drivers/input/touchscreen/mediatek/FT5446/Makefile
 new file mode 100644
-index 00000000000..ccfcb4d7e22
+index 00000000..ccfcb4d7
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/Makefile
 @@ -0,0 +1,18 @@
@@ -6085,7 +6122,7 @@ index 00000000000..ccfcb4d7e22
 +
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_Gesture.c b/drivers/input/touchscreen/mediatek/FT5446/focaltech_Gesture.c
 new file mode 100644
-index 00000000000..0672395d72b
+index 00000000..0672395d
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_Gesture.c
 @@ -0,0 +1,478 @@
@@ -6570,7 +6607,7 @@ index 00000000000..0672395d72b
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_core.c b/drivers/input/touchscreen/mediatek/FT5446/focaltech_core.c
 new file mode 100644
-index 00000000000..990c8f82ba7
+index 00000000..990c8f82
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_core.c
 @@ -0,0 +1,2318 @@
@@ -8894,7 +8931,7 @@ index 00000000000..990c8f82ba7
 +//modify@zte.com.cn add at 20160605 end
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_core.h b/drivers/input/touchscreen/mediatek/FT5446/focaltech_core.h
 new file mode 100644
-index 00000000000..4065cf990ab
+index 00000000..4065cf99
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_core.h
 @@ -0,0 +1,361 @@
@@ -9261,7 +9298,7 @@ index 00000000000..4065cf990ab
 +//modify@zte.com.cn add at 20160605 begin
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_core_old.c b/drivers/input/touchscreen/mediatek/FT5446/focaltech_core_old.c
 new file mode 100644
-index 00000000000..4a0f8684408
+index 00000000..4a0f8684
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_core_old.c
 @@ -0,0 +1,1765 @@
@@ -11033,7 +11070,7 @@ index 00000000000..4a0f8684408
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_ctl.c b/drivers/input/touchscreen/mediatek/FT5446/focaltech_ctl.c
 new file mode 100644
-index 00000000000..bb220603ff9
+index 00000000..bb220603
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_ctl.c
 @@ -0,0 +1,410 @@
@@ -11449,7 +11486,7 @@ index 00000000000..bb220603ff9
 +//modify@zte.com.cn add at 20160605 end
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_esd_protection.c b/drivers/input/touchscreen/mediatek/FT5446/focaltech_esd_protection.c
 new file mode 100644
-index 00000000000..521efe9c1f3
+index 00000000..521efe9c
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_esd_protection.c
 @@ -0,0 +1,223 @@
@@ -11679,7 +11716,7 @@ index 00000000000..521efe9c1f3
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_ex_fun.c b/drivers/input/touchscreen/mediatek/FT5446/focaltech_ex_fun.c
 new file mode 100644
-index 00000000000..c78bf01d626
+index 00000000..c78bf01d
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_ex_fun.c
 @@ -0,0 +1,1227 @@
@@ -12913,7 +12950,7 @@ index 00000000000..c78bf01d626
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/focaltech_flash.c b/drivers/input/touchscreen/mediatek/FT5446/focaltech_flash.c
 new file mode 100644
-index 00000000000..bec5cc338f9
+index 00000000..bec5cc33
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/focaltech_flash.c
 @@ -0,0 +1,4338 @@
@@ -17257,7 +17294,7 @@ index 00000000000..bec5cc338f9
 +//modify@zte.com.cn add at 20160605 end
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/ft_gesture_lib.h b/drivers/input/touchscreen/mediatek/FT5446/ft_gesture_lib.h
 new file mode 100644
-index 00000000000..31270fe25eb
+index 00000000..31270fe2
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/ft_gesture_lib.h
 @@ -0,0 +1,26 @@
@@ -17290,7 +17327,7 @@ index 00000000000..31270fe25eb
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/include/firmware1/temp b/drivers/input/touchscreen/mediatek/FT5446/include/firmware1/temp
 new file mode 100644
-index 00000000000..fa4aab9d3d2
+index 00000000..a0805a52
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/include/firmware1/temp
 @@ -0,0 +1,3364 @@
@@ -20661,7 +20698,7 @@ index 00000000000..fa4aab9d3d2
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/include/firmware1/tpd_custom_upgrade.h b/drivers/input/touchscreen/mediatek/FT5446/include/firmware1/tpd_custom_upgrade.h
 new file mode 100644
-index 00000000000..99fd4963392
+index 00000000..99fd4963
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/include/firmware1/tpd_custom_upgrade.h
 @@ -0,0 +1,102 @@
@@ -20769,7 +20806,7 @@ index 00000000000..99fd4963392
 +//modify@zte.com.cn add at 20160605 end
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/include/tpd_ft5x0x_common.h b/drivers/input/touchscreen/mediatek/FT5446/include/tpd_ft5x0x_common.h
 new file mode 100644
-index 00000000000..6ed089d0818
+index 00000000..6ed089d0
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/include/tpd_ft5x0x_common.h
 @@ -0,0 +1,172 @@
@@ -20947,7 +20984,7 @@ index 00000000000..6ed089d0818
 +//modify@zte.com.cn add at 20160605 end
 diff --git a/drivers/input/touchscreen/mediatek/FT5446/mcap_test_lib.h b/drivers/input/touchscreen/mediatek/FT5446/mcap_test_lib.h
 new file mode 100644
-index 00000000000..1965316b519
+index 00000000..1965316b
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/FT5446/mcap_test_lib.h
 @@ -0,0 +1,30 @@
@@ -20983,7 +21020,7 @@ index 00000000000..1965316b519
 +//modify@zte.com.cn add at 20160605 end
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/goodix_tool.c b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/goodix_tool.c
-index 52b77ece2e7..72f2a1dad09 100644
+index 52b77ece..72f2a1da 100644
 --- a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/goodix_tool.c
 +++ b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/goodix_tool.c
 @@ -503,6 +503,7 @@ static s32 goodix_tool_write(struct file *filp, const char __user *buff, unsigne
@@ -21003,7 +21040,7 @@ index 52b77ece2e7..72f2a1dad09 100644
  	else if (21 == cmd_head.wr) {
  		u16 wait_hotknot_timeout = 0;
 diff --git a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_driver.c b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_driver.c
-index 079b99020ca..e770ad5bcde 100644
+index 079b9902..e770ad5b 100644
 --- a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_driver.c
 +++ b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_driver.c
 @@ -36,8 +36,9 @@
@@ -21048,7 +21085,7 @@ index 079b99020ca..e770ad5bcde 100644
  	TPD_DEBUG_SET_TIME;
  	TPD_EM_PRINT(tpd_history_x, tpd_history_y,
 diff --git a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_update.c b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_update.c
-index f24ad7de8f3..ef119ca1da8 100644
+index f24ad7de..ef119ca1 100644
 --- a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_update.c
 +++ b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/gt9xx_update.c
 @@ -140,7 +140,7 @@ u8 load_fw_process = 0;
@@ -21071,7 +21108,7 @@ index f24ad7de8f3..ef119ca1da8 100644
  	s32 ret = 0;
 diff --git a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/include/config_mblu2/gt9xx_config.h b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/include/config_mblu2/gt9xx_config.h
 new file mode 100644
-index 00000000000..d5f618ac85d
+index 00000000..d5f618ac
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/include/config_mblu2/gt9xx_config.h
 @@ -0,0 +1,185 @@
@@ -21262,7 +21299,7 @@ index 00000000000..d5f618ac85d
 +#endif /* _GT1X_CONFIG_H_ */
 diff --git a/drivers/input/touchscreen/mediatek/GT9XX_hotknot/include/firmware_mblu2/gt9xx_firmware.h b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/include/firmware_mblu2/gt9xx_firmware.h
 new file mode 100644
-index 00000000000..355f705d5d9
+index 00000000..355f705d
 --- /dev/null
 +++ b/drivers/input/touchscreen/mediatek/GT9XX_hotknot/include/firmware_mblu2/gt9xx_firmware.h
 @@ -0,0 +1,5661 @@
@@ -26929,7 +26966,7 @@ index 00000000000..355f705d5d9
 +#endif
 \ No newline at end of file
 diff --git a/drivers/input/touchscreen/mediatek/Kconfig b/drivers/input/touchscreen/mediatek/Kconfig
-index aeb3452bb99..dd08bf99508 100644
+index aeb3452b..dd08bf99 100644
 --- a/drivers/input/touchscreen/mediatek/Kconfig
 +++ b/drivers/input/touchscreen/mediatek/Kconfig
 @@ -71,6 +71,19 @@ config TOUCHSCREEN_MTK_GT9XX_HOTKNOT
@@ -26953,7 +26990,7 @@ index aeb3452bb99..dd08bf99508 100644
  	bool "GT9XX hotknot phone for Mediatek package"
  	default n
 diff --git a/drivers/input/touchscreen/mediatek/Makefile b/drivers/input/touchscreen/mediatek/Makefile
-index 361741fbead..2b027a116f9 100644
+index 361741fb..2b027a11 100644
 --- a/drivers/input/touchscreen/mediatek/Makefile
 +++ b/drivers/input/touchscreen/mediatek/Makefile
 @@ -14,6 +14,7 @@ obj-$(CONFIG_TOUCHSCREEN_MTK_GT1151)	+=  GT1151/
@@ -26965,7 +27002,7 @@ index 361741fbead..2b027a116f9 100644
  obj-$(CONFIG_TOUCHSCREEN_MTK_SYNAPTICS_I2C_RMI4)	+=  synaptics_i2c_rmi4/
  obj-$(CONFIG_TOUCHSCREEN_MTK_GT928)	+=  GT928/
 diff --git a/drivers/misc/mediatek/Kconfig b/drivers/misc/mediatek/Kconfig
-index f98682147e5..0de51fe05a3 100644
+index 648385d0..c9533204 100644
 --- a/drivers/misc/mediatek/Kconfig
 +++ b/drivers/misc/mediatek/Kconfig
 @@ -309,6 +309,7 @@ source "drivers/misc/mediatek/audio_ipi/Kconfig"
@@ -26977,7 +27014,7 @@ index f98682147e5..0de51fe05a3 100644
  source "drivers/misc/mediatek/usb11/Kconfig"
  source "drivers/misc/mediatek/usb20/Kconfig"
 diff --git a/drivers/misc/mediatek/Makefile b/drivers/misc/mediatek/Makefile
-index 0ca10bee219..dec683a4138 100644
+index 0ca10bee..dec683a4 100644
 --- a/drivers/misc/mediatek/Makefile
 +++ b/drivers/misc/mediatek/Makefile
 @@ -80,6 +80,7 @@ obj-$(CONFIG_MTK_DEVINFO_DRIVER_V2) += devinfo/
@@ -26990,7 +27027,7 @@ index 0ca10bee219..dec683a4138 100644
  obj-$(CONFIG_MTK_SMI_EXT)	+= smi/
 diff --git a/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/Makefile b/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/Makefile
 new file mode 100644
-index 00000000000..2fa52e81598
+index 00000000..2fa52e81
 --- /dev/null
 +++ b/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/Makefile
 @@ -0,0 +1,3 @@
@@ -26999,7 +27036,7 @@ index 00000000000..2fa52e81598
 +
 diff --git a/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/s5k3l2_eeprom.c b/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/s5k3l2_eeprom.c
 new file mode 100644
-index 00000000000..4ff7889cdb3
+index 00000000..4ff7889c
 --- /dev/null
 +++ b/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/s5k3l2_eeprom.c
 @@ -0,0 +1,703 @@
@@ -27709,7 +27746,7 @@ index 00000000000..4ff7889cdb3
 \ No newline at end of file
 diff --git a/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/s5k3l2_eeprom.h b/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/s5k3l2_eeprom.h
 new file mode 100644
-index 00000000000..ce384ee5a49
+index 00000000..ce384ee5
 --- /dev/null
 +++ b/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/s5k3l2_eeprom.h
 @@ -0,0 +1,35 @@
@@ -27821,7 +27858,7 @@ literal 0
 HcmV?d00001
 
 diff --git a/drivers/misc/mediatek/flashlight/Kconfig b/drivers/misc/mediatek/flashlight/Kconfig
-index 16624048ffe..7a1c93e47ee 100644
+index 16624048..7a1c93e4 100644
 --- a/drivers/misc/mediatek/flashlight/Kconfig
 +++ b/drivers/misc/mediatek/flashlight/Kconfig
 @@ -10,6 +10,12 @@ config CUSTOM_KERNEL_FLASHLIGHT
@@ -27838,7 +27875,7 @@ index 16624048ffe..7a1c93e47ee 100644
  	bool "Mediatek flashlight driver build as module"
  	default n
 diff --git a/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/Makefile b/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/Makefile
-index cb5892d5b35..2f3413a407e 100644
+index cb5892d5..2f3413a4 100644
 --- a/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/Makefile
 +++ b/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/Makefile
 @@ -17,6 +17,7 @@
@@ -27851,7 +27888,7 @@ index cb5892d5b35..2f3413a407e 100644
  obj-m				+= flashlight_device.o
 diff --git a/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/leds_sky81294.c b/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/leds_sky81294.c
 new file mode 100644
-index 00000000000..85d25ff4b9a
+index 00000000..85d25ff4
 --- /dev/null
 +++ b/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/leds_sky81294.c
 @@ -0,0 +1,248 @@
@@ -28105,7 +28142,7 @@ index 00000000000..85d25ff4b9a
 +MODULE_LICENSE("GPL v2");
 \ No newline at end of file
 diff --git a/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/leds_strobe.c b/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/leds_strobe.c
-index 1f33d6b8dd2..e8c62696192 100644
+index 1f33d6b8..e8c62696 100644
 --- a/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/leds_strobe.c
 +++ b/drivers/misc/mediatek/flashlight/src/mt6735/constant_flashlight/leds_strobe.c
 @@ -38,7 +38,8 @@
@@ -28275,7 +28312,7 @@ index 1f33d6b8dd2..e8c62696192 100644
  /*	PK_DBG(" FL_Init line=%d\n", __LINE__); */
  	return 0;
 diff --git a/drivers/misc/mediatek/flashlight/src/mt6735/kd_flashlightlist.c b/drivers/misc/mediatek/flashlight/src/mt6735/kd_flashlightlist.c
-index 86b0a6da22c..a06c78a1b04 100644
+index 86b0a6da..a06c78a1 100644
 --- a/drivers/misc/mediatek/flashlight/src/mt6735/kd_flashlightlist.c
 +++ b/drivers/misc/mediatek/flashlight/src/mt6735/kd_flashlightlist.c
 @@ -291,6 +291,7 @@ static int decFlash(void)
@@ -28339,7 +28376,7 @@ index 86b0a6da22c..a06c78a1b04 100644
  
  	logI("[flashlight_probe] done! ~");
 diff --git a/drivers/misc/mediatek/gpu/Makefile b/drivers/misc/mediatek/gpu/Makefile
-index 3f785ea28d9..29fb48a7bed 100644
+index 3f785ea2..29fb48a7 100644
 --- a/drivers/misc/mediatek/gpu/Makefile
 +++ b/drivers/misc/mediatek/gpu/Makefile
 @@ -15,7 +15,6 @@ obj-y += ged/
@@ -28351,7 +28388,7 @@ index 3f785ea28d9..29fb48a7bed 100644
  # GPU R5P0
  ifeq ($(CONFIG_MTK_GPU_R5P0),y)
 diff --git a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index 07b372d1b6f..2db56d76ff7 100755
+index 07b372d1..2db56d76 100755
 --- a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28361,7 +28398,7 @@ index 07b372d1b6f..2db56d76ff7 100755
  CONFIG_MALI_MIDGARD := y
  
 diff --git a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index a6b056c0143..efbf3889ec7 100644
+index a6b056c0..efbf3889 100644
 --- a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28371,7 +28408,7 @@ index a6b056c0143..efbf3889ec7 100644
  
  #build support for a ARM Mali Midgard GPU
 diff --git a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p1/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p1/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index a6b056c0143..efbf3889ec7 100644
+index a6b056c0..efbf3889 100644
 --- a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p1/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r12p1/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28381,7 +28418,7 @@ index a6b056c0143..efbf3889ec7 100644
  
  #build support for a ARM Mali Midgard GPU
 diff --git a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r16p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r16p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index a6b056c0143..efbf3889ec7 100755
+index a6b056c0..efbf3889 100755
 --- a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r16p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r16p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28391,7 +28428,7 @@ index a6b056c0143..efbf3889ec7 100755
  
  #build support for a ARM Mali Midgard GPU
 diff --git a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r18p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r18p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index bc70cb10edb..a413a15ab80 100755
+index bc70cb10..a413a15a 100755
 --- a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r18p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r18p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28401,7 +28438,7 @@ index bc70cb10edb..a413a15ab80 100755
  
  #build support for a ARM Mali Midgard GPU
 diff --git a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index af229c65ba8..62a06517419 100755
+index af229c65..62a06517 100755
 --- a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28411,7 +28448,7 @@ index af229c65ba8..62a06517419 100755
  
  #build support for a ARM Mali Midgard GPU
 diff --git a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0_v2/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0_v2/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index 8546711ffcf..af00cfe5aec 100755
+index 8546711f..af00cfe5 100755
 --- a/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0_v2/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/gpu_mali/mali_midgard/mali-r7p0_v2/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28421,7 +28458,7 @@ index 8546711ffcf..af00cfe5aec 100755
  
  #build support for a ARM Mali Midgard GPU
 diff --git a/drivers/misc/mediatek/gpu/gpu_rgx/Makefile b/drivers/misc/mediatek/gpu/gpu_rgx/Makefile
-index fbe592933e3..dfc4aa3adeb 100644
+index fbe59293..dfc4aa3a 100644
 --- a/drivers/misc/mediatek/gpu/gpu_rgx/Makefile
 +++ b/drivers/misc/mediatek/gpu/gpu_rgx/Makefile
 @@ -12,7 +12,6 @@
@@ -28435,7 +28472,7 @@ index fbe592933e3..dfc4aa3adeb 100644
 diff --git a/drivers/misc/mediatek/gpu/mt6735/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/mt6735/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 old mode 100755
 new mode 100644
-index 93a8888609a..cf7ca6d6d42
+index 93a88886..cf7ca6d6
 --- a/drivers/misc/mediatek/gpu/mt6735/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/mt6735/mali-EAC/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28447,7 +28484,7 @@ index 93a8888609a..cf7ca6d6d42
 diff --git a/drivers/misc/mediatek/gpu/mt6735/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/mt6735/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 old mode 100755
 new mode 100644
-index 8546711ffcf..af00cfe5aec
+index 8546711f..af00cfe5
 --- a/drivers/misc/mediatek/gpu/mt6735/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/mt6735/mali-r7p0/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28457,7 +28494,7 @@ index 8546711ffcf..af00cfe5aec
  
  #build support for a ARM Mali Midgard GPU
 diff --git a/drivers/misc/mediatek/gpu/mt6735/mali/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env b/drivers/misc/mediatek/gpu/mt6735/mali/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
-index 04587e33616..7b45353cddf 100755
+index 04587e33..7b45353c 100755
 --- a/drivers/misc/mediatek/gpu/mt6735/mali/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 +++ b/drivers/misc/mediatek/gpu/mt6735/mali/drivers/gpu/arm/midgard/Kbuild-mtk-custom-env
 @@ -1,5 +1,3 @@
@@ -28467,7 +28504,7 @@ index 04587e33616..7b45353cddf 100755
  CONFIG_MALI_MIDGARD := y
  
 diff --git a/drivers/misc/mediatek/imgsensor/inc/kd_imgsensor.h b/drivers/misc/mediatek/imgsensor/inc/kd_imgsensor.h
-index f210e162fed..fd463dbc537 100644
+index f210e162..fd463dbc 100644
 --- a/drivers/misc/mediatek/imgsensor/inc/kd_imgsensor.h
 +++ b/drivers/misc/mediatek/imgsensor/inc/kd_imgsensor.h
 @@ -159,6 +159,7 @@
@@ -28505,7 +28542,7 @@ index f210e162fed..fd463dbc537 100644
  #define SENSOR_DRVNAME_S5K3H2YX_MIPI_RAW        "s5k3h2yxmipiraw"
  #define SENSOR_DRVNAME_S5K3H7Y_MIPI_RAW         "s5k3h7ymipiraw"
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.c b/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.c
-index de8d6f46f42..72bb5ba7b34 100644
+index de8d6f46..72bb5ba7 100644
 --- a/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.c
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.c
 @@ -43,7 +43,6 @@
@@ -28959,7 +28996,7 @@ index de8d6f46f42..72bb5ba7b34 100644
  	}
  
  	return 0;
-@@ -686,696 +520,7 @@ int kdCISModulePowerOn(CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx, char *currSenso
+@@ -686,696 +520,7 @@ _kdCISModulePowerOn_exit_:
  	return -EIO;
  
  }
@@ -29657,7 +29694,7 @@ index de8d6f46f42..72bb5ba7b34 100644
  
  /* !-- */
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.h b/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.h
-index 822a20eb081..a67bdd39723 100644
+index 822a20eb..a67bdd39 100644
 --- a/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.h
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/camera_hw/kd_camera_hw.h
 @@ -92,7 +92,8 @@ typedef enum {
@@ -29671,7 +29708,7 @@ index 822a20eb081..a67bdd39723 100644
  
  extern void ISP_MCLK1_EN(bool En);
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/kd_sensorlist.h b/drivers/misc/mediatek/imgsensor/src/mt6735/kd_sensorlist.h
-index 73f2a7eab20..fe92c3fe707 100644
+index 73f2a7ea..fe92c3fe 100644
 --- a/drivers/misc/mediatek/imgsensor/src/mt6735/kd_sensorlist.h
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/kd_sensorlist.h
 @@ -38,6 +38,9 @@ UINT32 OV8825_MIPI_RAW_SensorInit(PSENSOR_FUNCTION_STRUCT *pfFunc);
@@ -29702,7 +29739,7 @@ index 73f2a7eab20..fe92c3fe707 100644
  #endif
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/Makefile b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/Makefile
 new file mode 100644
-index 00000000000..738d02beec7
+index 00000000..738d02be
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/Makefile
 @@ -0,0 +1,14 @@
@@ -29722,7 +29759,7 @@ index 00000000000..738d02beec7
 +obj-y += ov5670mipi_Sensor.o
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/ov5670mipi_Sensor.c b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/ov5670mipi_Sensor.c
 new file mode 100644
-index 00000000000..e3d27388f4c
+index 00000000..e3d27388
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/ov5670mipi_Sensor.c
 @@ -0,0 +1,2053 @@
@@ -31781,7 +31818,7 @@ index 00000000000..e3d27388f4c
 +}	/*	OV5670_MIPI_RAW_SensorInit	*/
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/ov5670mipi_Sensor.h b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/ov5670mipi_Sensor.h
 new file mode 100644
-index 00000000000..7761fa78462
+index 00000000..7761fa78
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw/ov5670mipi_Sensor.h
 @@ -0,0 +1,136 @@
@@ -31923,7 +31960,7 @@ index 00000000000..7761fa78462
 +
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/Makefile b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/Makefile
 new file mode 100644
-index 00000000000..74d3a6e5179
+index 00000000..74d3a6e5
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/Makefile
 @@ -0,0 +1,14 @@
@@ -31943,7 +31980,7 @@ index 00000000000..74d3a6e5179
 +obj-y += ov5670mipi_Sensor_geer.o
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/ov5670mipi_Sensor_geer.c b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/ov5670mipi_Sensor_geer.c
 new file mode 100644
-index 00000000000..9c9222cade2
+index 00000000..9c9222ca
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/ov5670mipi_Sensor_geer.c
 @@ -0,0 +1,2055 @@
@@ -34004,7 +34041,7 @@ index 00000000000..9c9222cade2
 +}	/*	OV5670_MIPI_RAW_SensorInit	*/
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/ov5670mipi_Sensor_geer.h b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/ov5670mipi_Sensor_geer.h
 new file mode 100644
-index 00000000000..7761fa78462
+index 00000000..7761fa78
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/ov5670_mipi_raw_geer/ov5670mipi_Sensor_geer.h
 @@ -0,0 +1,136 @@
@@ -34146,7 +34183,7 @@ index 00000000000..7761fa78462
 +
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/Makefile b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/Makefile
 new file mode 100644
-index 00000000000..1c13792bf2b
+index 00000000..1c13792b
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/Makefile
 @@ -0,0 +1,14 @@
@@ -34166,7 +34203,7 @@ index 00000000000..1c13792bf2b
 +obj-y += s5k3l2mipiraw_Sensor.o
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/s5k3l2mipiraw_Sensor.c b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/s5k3l2mipiraw_Sensor.c
 new file mode 100644
-index 00000000000..f0e812c8bbe
+index 00000000..f0e812c8
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/s5k3l2mipiraw_Sensor.c
 @@ -0,0 +1,2632 @@
@@ -36804,7 +36841,7 @@ index 00000000000..f0e812c8bbe
 +}    /*    OV5693_MIPI_RAW_SensorInit    */
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/s5k3l2mipiraw_Sensor.h b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/s5k3l2mipiraw_Sensor.h
 new file mode 100644
-index 00000000000..0f0a7e18508
+index 00000000..0f0a7e18
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw/s5k3l2mipiraw_Sensor.h
 @@ -0,0 +1,122 @@
@@ -36932,7 +36969,7 @@ index 00000000000..0f0a7e18508
 +
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/Makefile b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/Makefile
 new file mode 100644
-index 00000000000..faf298f2b2c
+index 00000000..faf298f2
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/Makefile
 @@ -0,0 +1,14 @@
@@ -36952,7 +36989,7 @@ index 00000000000..faf298f2b2c
 +obj-y += s5k3l2mipiraw_Sensor_geer.o
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/s5k3l2mipiraw_Sensor_geer.c b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/s5k3l2mipiraw_Sensor_geer.c
 new file mode 100644
-index 00000000000..e3e3d176e47
+index 00000000..e3e3d176
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/s5k3l2mipiraw_Sensor_geer.c
 @@ -0,0 +1,2632 @@
@@ -39590,7 +39627,7 @@ index 00000000000..e3e3d176e47
 +}    /*    OV5693_MIPI_RAW_SensorInit    */
 diff --git a/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/s5k3l2mipiraw_Sensor_geer.h b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/s5k3l2mipiraw_Sensor_geer.h
 new file mode 100644
-index 00000000000..0f0a7e18508
+index 00000000..0f0a7e18
 --- /dev/null
 +++ b/drivers/misc/mediatek/imgsensor/src/mt6735/s5k3l2_mipi_raw_geer/s5k3l2mipiraw_Sensor_geer.h
 @@ -0,0 +1,122 @@
@@ -39717,7 +39754,7 @@ index 00000000000..0f0a7e18508
 +extern void kdSetI2CSpeed(u16 i2cSpeed);
 +
 diff --git a/drivers/misc/mediatek/include/mt-plat/battery_common.h b/drivers/misc/mediatek/include/mt-plat/battery_common.h
-index d47ff68d061..8e63ef16ece 100644
+index d47ff68d..8e63ef16 100644
 --- a/drivers/misc/mediatek/include/mt-plat/battery_common.h
 +++ b/drivers/misc/mediatek/include/mt-plat/battery_common.h
 @@ -21,7 +21,9 @@
@@ -39731,7 +39768,7 @@ index d47ff68d061..8e63ef16ece 100644
  #define CONSTANT_VOLTAGE_CHARGE_VOLTAGE     (4200)
  #define CV_DROPDOWN_VOLTAGE                 (4000)
 diff --git a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter.h b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter.h
-index 8bf7da33671..3a5323b5d24 100644
+index 8bf7da33..3a5323b5 100644
 --- a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter.h
 +++ b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter.h
 @@ -21,7 +21,7 @@
@@ -39798,7 +39835,7 @@ index 8bf7da33671..3a5323b5d24 100644
  #elif defined(CONFIG_ARCH_MT6735M)
  /* ============================================================
 diff --git a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter_table_multi_profile.h b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter_table_multi_profile.h
-index 48648dbcc14..6b3943eb13c 100644
+index 48648dbc..6b3943eb 100644
 --- a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter_table_multi_profile.h
 +++ b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_battery_meter_table_multi_profile.h
 @@ -22,20 +22,20 @@
@@ -45387,7 +45424,7 @@ index 48648dbcc14..6b3943eb13c 100644
  
 +
 diff --git a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_charging.h b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_charging.h
-index c17463433dc..cc05b9e164f 100644
+index c1746343..cc05b9e1 100644
 --- a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_charging.h
 +++ b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_charging.h
 @@ -29,17 +29,17 @@
@@ -45440,7 +45477,7 @@ index c17463433dc..cc05b9e164f 100644
  /* JEITA parameter */
  /*#define MTK_JEITA_STANDARD_SUPPORT*/
 diff --git a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_pmic.h b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_pmic.h
-index 051b17839f9..68f6383fe97 100644
+index 051b1783..68f6383f 100644
 --- a/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_pmic.h
 +++ b/drivers/misc/mediatek/include/mt-plat/mt6735/include/mach/mt_pmic.h
 @@ -49,7 +49,7 @@
@@ -45454,7 +45491,7 @@ index 051b17839f9..68f6383fe97 100644
  
 diff --git a/drivers/misc/mediatek/lcm/ili9881_CA_hd720_dsi_vdo_yassy/Makefile b/drivers/misc/mediatek/lcm/ili9881_CA_hd720_dsi_vdo_yassy/Makefile
 new file mode 100644
-index 00000000000..912c81ad8c0
+index 00000000..5ae30e7f
 --- /dev/null
 +++ b/drivers/misc/mediatek/lcm/ili9881_CA_hd720_dsi_vdo_yassy/Makefile
 @@ -0,0 +1,2 @@
@@ -45462,7 +45499,7 @@ index 00000000000..912c81ad8c0
 +ccflags-$(CONFIG_MTK_LCM) += -I$(srctree)/drivers/misc/mediatek/lcm/inc
 diff --git a/drivers/misc/mediatek/lcm/ili9881_CA_hd720_dsi_vdo_yassy/ili9881_CA_hd720_dsi_vdo_yassy.c b/drivers/misc/mediatek/lcm/ili9881_CA_hd720_dsi_vdo_yassy/ili9881_CA_hd720_dsi_vdo_yassy.c
 new file mode 100644
-index 00000000000..137fc0c95c3
+index 00000000..137fc0c9
 --- /dev/null
 +++ b/drivers/misc/mediatek/lcm/ili9881_CA_hd720_dsi_vdo_yassy/ili9881_CA_hd720_dsi_vdo_yassy.c
 @@ -0,0 +1,415 @@
@@ -45882,7 +45919,7 @@ index 00000000000..137fc0c95c3
 +	.esd_recover = lcm_esd_recover
 +};
 diff --git a/drivers/misc/mediatek/lcm/mt65xx_lcm_list.c b/drivers/misc/mediatek/lcm/mt65xx_lcm_list.c
-index f6562421ba1..22ec084c58a 100644
+index f6562421..22ec084c 100644
 --- a/drivers/misc/mediatek/lcm/mt65xx_lcm_list.c
 +++ b/drivers/misc/mediatek/lcm/mt65xx_lcm_list.c
 @@ -40,10 +40,19 @@ LCM_DRIVER *lcm_driver_list[] = {
@@ -45906,7 +45943,7 @@ index f6562421ba1..22ec084c58a 100644
  	&nt35595_fhd_dsi_cmd_truly_8163_lcm_drv,
  #endif
 diff --git a/drivers/misc/mediatek/lcm/mt65xx_lcm_list.h b/drivers/misc/mediatek/lcm/mt65xx_lcm_list.h
-index 3470e700c42..72a89ffbe64 100644
+index 3470e700..72a89ffb 100644
 --- a/drivers/misc/mediatek/lcm/mt65xx_lcm_list.h
 +++ b/drivers/misc/mediatek/lcm/mt65xx_lcm_list.h
 @@ -191,7 +191,9 @@ extern LCM_DRIVER it6151_edp_dsi_video_sharp_lcm_drv;
@@ -45921,7 +45958,7 @@ index 3470e700c42..72a89ffbe64 100644
  extern LCM_DRIVER tf070mc_rgb_v18_mt6571_lcm_drv;
 diff --git a/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_by/Makefile b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_by/Makefile
 new file mode 100644
-index 00000000000..3d48210e808
+index 00000000..3d48210e
 --- /dev/null
 +++ b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_by/Makefile
 @@ -0,0 +1,2 @@
@@ -45929,7 +45966,7 @@ index 00000000000..3d48210e808
 +ccflags-$(CONFIG_MTK_LCM) += -I$(srctree)/drivers/misc/mediatek/lcm/inc
 diff --git a/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_by/otm1285a_hd720_dsi_vdo_by.c b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_by/otm1285a_hd720_dsi_vdo_by.c
 new file mode 100644
-index 00000000000..bf5a6893ae1
+index 00000000..bf5a6893
 --- /dev/null
 +++ b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_by/otm1285a_hd720_dsi_vdo_by.c
 @@ -0,0 +1,380 @@
@@ -46315,7 +46352,7 @@ index 00000000000..bf5a6893ae1
 +};
 diff --git a/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_tm/Makefile b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_tm/Makefile
 new file mode 100644
-index 00000000000..1e45d98794f
+index 00000000..1e45d987
 --- /dev/null
 +++ b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_tm/Makefile
 @@ -0,0 +1,2 @@
@@ -46323,7 +46360,7 @@ index 00000000000..1e45d98794f
 +ccflags-$(CONFIG_MTK_LCM) += -I$(srctree)/drivers/misc/mediatek/lcm/inc
 diff --git a/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_tm/otm1285a_hd720_dsi_vdo_tm.c b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_tm/otm1285a_hd720_dsi_vdo_tm.c
 new file mode 100644
-index 00000000000..ba62babd4f9
+index 00000000..ba62babd
 --- /dev/null
 +++ b/drivers/misc/mediatek/lcm/otm1285a_hd720_dsi_vdo_tm/otm1285a_hd720_dsi_vdo_tm.c
 @@ -0,0 +1,299 @@
@@ -46627,7 +46664,7 @@ index 00000000000..ba62babd4f9
 +	.compare_id = lcm_compare_id
 +};
 diff --git a/drivers/misc/mediatek/lens/Kconfig b/drivers/misc/mediatek/lens/Kconfig
-index dc48cd7fce0..98a7220f298 100644
+index dc48cd7f..98a7220f 100644
 --- a/drivers/misc/mediatek/lens/Kconfig
 +++ b/drivers/misc/mediatek/lens/Kconfig
 @@ -264,3 +264,21 @@ config MTK_LENS_WV511AAF_SUPPORT
@@ -46653,7 +46690,7 @@ index dc48cd7fce0..98a7220f298 100644
 +	  lens driver for the camera sensor module
 +	  Set as y if the driver is used in this project
 diff --git a/drivers/misc/mediatek/lens/Makefile b/drivers/misc/mediatek/lens/Makefile
-index 06deaf6efec..145c4d50b4a 100644
+index 06deaf6e..145c4d50 100644
 --- a/drivers/misc/mediatek/lens/Makefile
 +++ b/drivers/misc/mediatek/lens/Makefile
 @@ -4,4 +4,4 @@
@@ -46664,7 +46701,7 @@ index 06deaf6efec..145c4d50b4a 100644
 \ No newline at end of file
 +obj-$(CONFIG_MTK_LENS)   += sub/
 diff --git a/drivers/misc/mediatek/lens/main/Makefile b/drivers/misc/mediatek/lens/main/Makefile
-index 578fdb3912a..b0c27cd0c56 100644
+index 578fdb39..b0c27cd0 100644
 --- a/drivers/misc/mediatek/lens/main/Makefile
 +++ b/drivers/misc/mediatek/lens/main/Makefile
 @@ -33,6 +33,12 @@ endif
@@ -46682,7 +46719,7 @@ index 578fdb3912a..b0c27cd0c56 100644
  mainaf-y  += common/bu6429af/BU6429AF.o
 diff --git a/drivers/misc/mediatek/lens/main/common/bu6429116109af/BU6429116109AF.c b/drivers/misc/mediatek/lens/main/common/bu6429116109af/BU6429116109AF.c
 new file mode 100644
-index 00000000000..7046390ad77
+index 00000000..7046390a
 --- /dev/null
 +++ b/drivers/misc/mediatek/lens/main/common/bu6429116109af/BU6429116109AF.c
 @@ -0,0 +1,250 @@
@@ -46938,7 +46975,7 @@ index 00000000000..7046390ad77
 +}
 diff --git a/drivers/misc/mediatek/lens/main/common/bu6429116109af/Makefile b/drivers/misc/mediatek/lens/main/common/bu6429116109af/Makefile
 new file mode 100644
-index 00000000000..fe01d8bed62
+index 00000000..fe01d8be
 --- /dev/null
 +++ b/drivers/misc/mediatek/lens/main/common/bu6429116109af/Makefile
 @@ -0,0 +1,8 @@
@@ -46952,7 +46989,7 @@ index 00000000000..fe01d8bed62
 +
 diff --git a/drivers/misc/mediatek/lens/main/common/bu6429116134af/BU6429116134AF.c b/drivers/misc/mediatek/lens/main/common/bu6429116134af/BU6429116134AF.c
 new file mode 100644
-index 00000000000..3426f58a231
+index 00000000..3426f58a
 --- /dev/null
 +++ b/drivers/misc/mediatek/lens/main/common/bu6429116134af/BU6429116134AF.c
 @@ -0,0 +1,249 @@
@@ -47207,7 +47244,7 @@ index 00000000000..3426f58a231
 +}
 diff --git a/drivers/misc/mediatek/lens/main/common/bu6429116134af/Makefile b/drivers/misc/mediatek/lens/main/common/bu6429116134af/Makefile
 new file mode 100644
-index 00000000000..723a79d18fb
+index 00000000..723a79d1
 --- /dev/null
 +++ b/drivers/misc/mediatek/lens/main/common/bu6429116134af/Makefile
 @@ -0,0 +1,8 @@
@@ -47220,7 +47257,7 @@ index 00000000000..723a79d18fb
 +
 +
 diff --git a/drivers/misc/mediatek/lens/main/inc/lens_info.h b/drivers/misc/mediatek/lens/main/inc/lens_info.h
-index 3ef82de3cb6..f2524e62873 100644
+index 3ef82de3..f2524e62 100644
 --- a/drivers/misc/mediatek/lens/main/inc/lens_info.h
 +++ b/drivers/misc/mediatek/lens/main/inc/lens_info.h
 @@ -23,6 +23,12 @@
@@ -47237,7 +47274,7 @@ index 3ef82de3cb6..f2524e62873 100644
  #define AFDRV_AD5823 "AD5823"
  #define AFDRV_AD5823AF "AD5823AF"
 diff --git a/drivers/misc/mediatek/lens/main/inc/lens_list.h b/drivers/misc/mediatek/lens/main/inc/lens_list.h
-index d4f9abc9936..91b6aef9f8f 100644
+index d4f9abc9..91b6aef9 100644
 --- a/drivers/misc/mediatek/lens/main/inc/lens_list.h
 +++ b/drivers/misc/mediatek/lens/main/inc/lens_list.h
 @@ -15,6 +15,24 @@
@@ -47266,7 +47303,7 @@ index d4f9abc9936..91b6aef9f8f 100644
  #define AK7371AF_Ioctl AK7371AF_Ioctl_Main
  #define AK7371AF_Release AK7371AF_Release_Main
 diff --git a/drivers/misc/mediatek/lens/main/main_lens.c b/drivers/misc/mediatek/lens/main/main_lens.c
-index 3cea3c4b744..1621c15bd8f 100644
+index 3cea3c4b..1621c15b 100644
 --- a/drivers/misc/mediatek/lens/main/main_lens.c
 +++ b/drivers/misc/mediatek/lens/main/main_lens.c
 @@ -39,32 +39,12 @@
@@ -47464,7 +47501,7 @@ index 3cea3c4b744..1621c15bd8f 100644
  		LOG_INF("failed to register AF driver\n");
  		return -ENODEV;
 diff --git a/drivers/misc/mediatek/power/mt6735/charging_hw_fan5405.c b/drivers/misc/mediatek/power/mt6735/charging_hw_fan5405.c
-index f2b601a0de9..955e58e9dfa 100644
+index f2b601a0..955e58e9 100644
 --- a/drivers/misc/mediatek/power/mt6735/charging_hw_fan5405.c
 +++ b/drivers/misc/mediatek/power/mt6735/charging_hw_fan5405.c
 @@ -527,7 +527,7 @@ charging_hw_init, charging_dump_register, charging_enable, charging_set_cv_volta
@@ -47477,7 +47514,7 @@ index f2b601a0de9..955e58e9dfa 100644
  	s32 status;
  
 diff --git a/drivers/misc/mediatek/power/mt6735/fan5405.c b/drivers/misc/mediatek/power/mt6735/fan5405.c
-index b137e3501ae..9c251f5105a 100644
+index b137e350..9c251f51 100644
 --- a/drivers/misc/mediatek/power/mt6735/fan5405.c
 +++ b/drivers/misc/mediatek/power/mt6735/fan5405.c
 @@ -40,16 +40,17 @@ ONTIM_DEBUG_DECLARE_AND_INIT(charge_ic, charge_ic, 8);
@@ -47535,7 +47572,7 @@ index b137e3501ae..9c251f5105a 100644
  
  /**********************************************************
 diff --git a/drivers/misc/mediatek/sensors-1.0/accelerometer/Kconfig b/drivers/misc/mediatek/sensors-1.0/accelerometer/Kconfig
-index 00311135ce0..041acdb0106 100644
+index 00311135..041acdb0 100644
 --- a/drivers/misc/mediatek/sensors-1.0/accelerometer/Kconfig
 +++ b/drivers/misc/mediatek/sensors-1.0/accelerometer/Kconfig
 @@ -23,3 +23,4 @@ source "drivers/misc/mediatek/sensors-1.0/accelerometer/mpu6515/Kconfig"
@@ -47544,7 +47581,7 @@ index 00311135ce0..041acdb0106 100644
  source "drivers/misc/mediatek/sensors-1.0/accelerometer/stk8baxx/Kconfig"
 +source "drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/Kconfig"
 diff --git a/drivers/misc/mediatek/sensors-1.0/accelerometer/Makefile b/drivers/misc/mediatek/sensors-1.0/accelerometer/Makefile
-index 634cf63dbff..8524407bd49 100644
+index 634cf63d..8524407b 100644
 --- a/drivers/misc/mediatek/sensors-1.0/accelerometer/Makefile
 +++ b/drivers/misc/mediatek/sensors-1.0/accelerometer/Makefile
 @@ -11,3 +11,4 @@ obj-$(CONFIG_MTK_MPU6515A)		+= mpu6515/
@@ -47554,7 +47591,7 @@ index 634cf63dbff..8524407bd49 100644
 +obj-$(CONFIG_MTK_LIS3DH) += lis3dh/
 diff --git a/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/Kconfig b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/Kconfig
 new file mode 100644
-index 00000000000..ad0f08f9fb7
+index 00000000..ad0f08f9
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/Kconfig
 @@ -0,0 +1,6 @@
@@ -47566,7 +47603,7 @@ index 00000000000..ad0f08f9fb7
 +		If this option is set, it will support LIS3DH Accelerometer.
 diff --git a/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/Makefile b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/Makefile
 new file mode 100644
-index 00000000000..7bf71761f91
+index 00000000..7bf71761
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/Makefile
 @@ -0,0 +1,5 @@
@@ -47577,7 +47614,7 @@ index 00000000000..7bf71761f91
 +
 diff --git a/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/lis3dh.c b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/lis3dh.c
 new file mode 100644
-index 00000000000..09a80a7378a
+index 00000000..09a80a73
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/lis3dh.c
 @@ -0,0 +1,1437 @@
@@ -49020,7 +49057,7 @@ index 00000000000..09a80a7378a
 +MODULE_AUTHOR("Chunlei.Wang@mediatek.com");
 diff --git a/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/lis3dh.h b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/lis3dh.h
 new file mode 100644
-index 00000000000..d3a63bae6f3
+index 00000000..d3a63bae
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/accelerometer/lis3dh/lis3dh.h
 @@ -0,0 +1,70 @@
@@ -49095,7 +49132,7 @@ index 00000000000..d3a63bae6f3
 +
 +#endif
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/Kconfig b/drivers/misc/mediatek/sensors-1.0/alsps/Kconfig
-index b710933a212..d74c672d6b7 100644
+index b710933a..d74c672d 100644
 --- a/drivers/misc/mediatek/sensors-1.0/alsps/Kconfig
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/Kconfig
 @@ -23,3 +23,4 @@ source "drivers/misc/mediatek/sensors-1.0/alsps/epl2182/Kconfig"
@@ -49104,7 +49141,7 @@ index b710933a212..d74c672d6b7 100644
  source "drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x/Kconfig"
 +source "drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/Kconfig"
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/Makefile b/drivers/misc/mediatek/sensors-1.0/alsps/Makefile
-index a06a0afe2f1..ff0e55e0539 100644
+index a06a0afe..ff0e55e0 100644
 --- a/drivers/misc/mediatek/sensors-1.0/alsps/Makefile
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/Makefile
 @@ -12,3 +12,4 @@ obj-$(CONFIG_MTK_EPL2182)	+=  epl2182/
@@ -49113,7 +49150,7 @@ index a06a0afe2f1..ff0e55e0539 100644
  obj-$(CONFIG_MTK_STK3X1X_OT)	+=  stk3x1x/
 +obj-$(CONFIG_MTK_STK3X1X_NEW) += stk3x1x-new/
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/epl2182/epl2182.c b/drivers/misc/mediatek/sensors-1.0/alsps/epl2182/epl2182.c
-index 9fcaa78daa2..29b9c495766 100644
+index 9fcaa78d..29b9c495 100644
 --- a/drivers/misc/mediatek/sensors-1.0/alsps/epl2182/epl2182.c
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/epl2182/epl2182.c
 @@ -73,7 +73,7 @@ struct epl_raw_data {
@@ -49175,7 +49212,7 @@ index 9fcaa78daa2..29b9c495766 100644
  	if (!obj) {
  		err = -ENOMEM;
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/inc/cust_alsps.h b/drivers/misc/mediatek/sensors-1.0/alsps/inc/cust_alsps.h
-index a220a1fd077..4a929d14532 100644
+index a220a1fd..4a929d14 100644
 --- a/drivers/misc/mediatek/sensors-1.0/alsps/inc/cust_alsps.h
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/inc/cust_alsps.h
 @@ -33,10 +33,17 @@ struct alsps_hw {
@@ -49198,7 +49235,7 @@ index a220a1fd077..4a929d14532 100644
  	int als_power_vio_id;                                   /*!< the VIO power id of the als chip */
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/Kconfig b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/Kconfig
 new file mode 100644
-index 00000000000..8336b75c4f4
+index 00000000..8336b75c
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/Kconfig
 @@ -0,0 +1,9 @@
@@ -49213,7 +49250,7 @@ index 00000000000..8336b75c4f4
 +	and light sensor stk3x1x.
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/Makefile b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/Makefile
 new file mode 100644
-index 00000000000..681fab9869b
+index 00000000..681fab98
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/Makefile
 @@ -0,0 +1,5 @@
@@ -49224,7 +49261,7 @@ index 00000000000..681fab9869b
 +
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/stk3x1x.c b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/stk3x1x.c
 new file mode 100644
-index 00000000000..e7497858c1f
+index 00000000..e7497858
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/stk3x1x.c
 @@ -0,0 +1,2749 @@
@@ -51979,7 +52016,7 @@ index 00000000000..e7497858c1f
 +MODULE_LICENSE("GPL");
 diff --git a/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/stk3x1x.h b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/stk3x1x.h
 new file mode 100644
-index 00000000000..c87ce5aac57
+index 00000000..c87ce5aa
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/alsps/stk3x1x-new/stk3x1x.h
 @@ -0,0 +1,129 @@
@@ -52113,7 +52150,7 @@ index 00000000000..c87ce5aac57
 +
 +#endif
 diff --git a/drivers/misc/mediatek/sensors-1.0/hwmon/sensor_dts/sensor_dts.c b/drivers/misc/mediatek/sensors-1.0/hwmon/sensor_dts/sensor_dts.c
-index 8fc383a1e67..dbf71d73c95 100644
+index 8fc383a1..dbf71d73 100644
 --- a/drivers/misc/mediatek/sensors-1.0/hwmon/sensor_dts/sensor_dts.c
 +++ b/drivers/misc/mediatek/sensors-1.0/hwmon/sensor_dts/sensor_dts.c
 @@ -93,6 +93,14 @@ int get_alsps_dts_func(struct device_node *node, struct alsps_hw *hw)
@@ -52172,7 +52209,7 @@ index 8fc383a1e67..dbf71d73c95 100644
  	ret = of_property_read_u32_array(node, "is_batch_supported_ps", is_batch_supported_ps,
  		ARRAY_SIZE(is_batch_supported_ps));
 diff --git a/drivers/misc/mediatek/sensors-1.0/magnetometer/Kconfig b/drivers/misc/mediatek/sensors-1.0/magnetometer/Kconfig
-index 55056eef4ad..7f5c3b76d3b 100644
+index 55056eef..7f5c3b76 100644
 --- a/drivers/misc/mediatek/sensors-1.0/magnetometer/Kconfig
 +++ b/drivers/misc/mediatek/sensors-1.0/magnetometer/Kconfig
 @@ -18,3 +18,4 @@ config CUSTOM_KERNEL_MAGNETOMETER
@@ -52181,7 +52218,7 @@ index 55056eef4ad..7f5c3b76d3b 100644
  source "drivers/misc/mediatek/sensors-1.0/magnetometer/akm8963/Kconfig"
 +source "drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/Kconfig"
 diff --git a/drivers/misc/mediatek/sensors-1.0/magnetometer/Makefile b/drivers/misc/mediatek/sensors-1.0/magnetometer/Makefile
-index f22ecdb35f6..391b8637bb6 100644
+index f22ecdb3..391b8637 100644
 --- a/drivers/misc/mediatek/sensors-1.0/magnetometer/Makefile
 +++ b/drivers/misc/mediatek/sensors-1.0/magnetometer/Makefile
 @@ -9,3 +9,4 @@ obj-y   +=  mag_factory.o
@@ -52191,7 +52228,7 @@ index f22ecdb35f6..391b8637bb6 100644
 +obj-$(CONFIG_MTK_QMCX983) += qmcX983/
 diff --git a/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/Kconfig b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/Kconfig
 new file mode 100644
-index 00000000000..a47c192f950
+index 00000000..a47c192f
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/Kconfig
 @@ -0,0 +1,9 @@
@@ -52206,7 +52243,7 @@ index 00000000000..a47c192f950
 +          QMCX983 magnetometer.
 diff --git a/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/Makefile b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/Makefile
 new file mode 100644
-index 00000000000..a0a5c9c2a1d
+index 00000000..a0a5c9c2
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/Makefile
 @@ -0,0 +1,3 @@
@@ -52215,10 +52252,10 @@ index 00000000000..a0a5c9c2a1d
 +obj-y	:=  qmcX983.o
 diff --git a/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/qmcX983.c b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/qmcX983.c
 new file mode 100644
-index 00000000000..6b4958c8c80
+index 00000000..99dc1340
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/qmcX983.c
-@@ -0,0 +1,1895 @@
+@@ -0,0 +1,1901 @@
 +/* qmcX983.c - qmcX983 compass driver
 + *
 + *
@@ -53189,7 +53226,7 @@ index 00000000000..6b4958c8c80
 +	int vec[3] = {0};
 +	struct i2c_client *client = this_client;
 +	struct qmcX983_i2c_data *clientdata = i2c_get_clientdata(client);
-+	struct hwm_sensor_data osensor_data;
++	//struct hwm_sensor_data osensor_data;
 +	uint32_t enable;
 +
 +	int err;
@@ -53363,7 +53400,7 @@ index 00000000000..6b4958c8c80
 +	    }
 +	    break;
 +	/*-------------------------for ftm------------------------**/
-+
++#if 0
 +	case MSENSOR_IOCTL_READ_CHIPINFO:       //reserved?
 +		if(argp == NULL)
 +		{
@@ -53377,6 +53414,7 @@ index 00000000000..6b4958c8c80
 +			return -EFAULT;
 +		}
 +		break;
++#endif
 +
 +	case MSENSOR_IOCTL_READ_SENSORDATA:	//for daemon
 +		if(argp == NULL)
@@ -53437,6 +53475,7 @@ index 00000000000..6b4958c8c80
 +		}
 +		break;
 +
++#if 0
 +	case MSENSOR_IOCTL_READ_FACTORY_SENSORDATA:
 +		if(argp == NULL)
 +		{
@@ -53463,7 +53502,7 @@ index 00000000000..6b4958c8c80
 +		}
 +
 +		break;
-+
++#endif
 +	default:
 +		MSE_ERR("%s not supported = 0x%04x", __FUNCTION__, cmd);
 +		return -ENOIOCTLCMD;
@@ -53565,12 +53604,14 @@ index 00000000000..6b4958c8c80
 +			MSE_ERR("QMC_IOCTL_GET_DELAY execute failed! err = %ld\n", err);
 +		break;
 +
++#if 0
 +	case COMPAT_MSENSOR_IOCTL_READ_CHIPINFO:
 +		err = file->f_op->unlocked_ioctl(file, MSENSOR_IOCTL_READ_CHIPINFO, (unsigned long)arg64);
 +		if (err < 0)
 +			MSE_ERR("MSENSOR_IOCTL_READ_CHIPINFO execute failed! err = %ld\n", err);
 +
 +		break;
++#endif
 +
 +	/* ================================================================ */
 +	case COMPAT_MSENSOR_IOCTL_READ_SENSORDATA:
@@ -53588,6 +53629,7 @@ index 00000000000..6b4958c8c80
 +
 +		break;
 +
++#if 0
 +	/* ================================================================ */
 +	case COMPAT_MSENSOR_IOCTL_READ_FACTORY_SENSORDATA:
 +		err = file->f_op->unlocked_ioctl(file, MSENSOR_IOCTL_READ_FACTORY_SENSORDATA, (unsigned long)arg64);
@@ -53595,6 +53637,7 @@ index 00000000000..6b4958c8c80
 +			MSE_ERR("MSENSOR_IOCTL_READ_FACTORY_SENSORDATA execute failed! err = %ld\n", err);
 +
 +		break;
++#endif
 +
 +	/* ================================================================ */
 +	default :
@@ -54116,7 +54159,7 @@ index 00000000000..6b4958c8c80
 +MODULE_VERSION(DRIVER_VERSION);
 diff --git a/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/qmcX983.h b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/qmcX983.h
 new file mode 100644
-index 00000000000..66c0d6a212d
+index 00000000..66c0d6a2
 --- /dev/null
 +++ b/drivers/misc/mediatek/sensors-1.0/magnetometer/qmcX983/qmcX983.h
 @@ -0,0 +1,178 @@
@@ -54300,7 +54343,7 @@ index 00000000000..66c0d6a212d
 +
 diff --git a/drivers/misc/mediatek/touchkey/Kconfig b/drivers/misc/mediatek/touchkey/Kconfig
 new file mode 100644
-index 00000000000..08069af40f5
+index 00000000..08069af4
 --- /dev/null
 +++ b/drivers/misc/mediatek/touchkey/Kconfig
 @@ -0,0 +1,11 @@
@@ -54318,14 +54361,14 @@ index 00000000000..08069af40f5
 \ No newline at end of file
 diff --git a/drivers/misc/mediatek/touchkey/Makefile b/drivers/misc/mediatek/touchkey/Makefile
 new file mode 100644
-index 00000000000..4ccb07b9e7e
+index 00000000..4ccb07b9
 --- /dev/null
 +++ b/drivers/misc/mediatek/touchkey/Makefile
 @@ -0,0 +1 @@
 +obj-$(CONFIG_MTK_TOUCHKEY_AW9201_SUPPORT) += aw9201/
 diff --git a/drivers/misc/mediatek/touchkey/aw9201/Makefile b/drivers/misc/mediatek/touchkey/aw9201/Makefile
 new file mode 100644
-index 00000000000..be7a06de2c5
+index 00000000..be7a06de
 --- /dev/null
 +++ b/drivers/misc/mediatek/touchkey/aw9201/Makefile
 @@ -0,0 +1 @@
@@ -54333,7 +54376,7 @@ index 00000000000..be7a06de2c5
 \ No newline at end of file
 diff --git a/drivers/misc/mediatek/touchkey/aw9201/aw9201.c b/drivers/misc/mediatek/touchkey/aw9201/aw9201.c
 new file mode 100644
-index 00000000000..4622b26c5c0
+index 00000000..4622b26c
 --- /dev/null
 +++ b/drivers/misc/mediatek/touchkey/aw9201/aw9201.c
 @@ -0,0 +1,752 @@
@@ -55090,7 +55133,7 @@ index 00000000000..4622b26c5c0
 +MODULE_DESCRIPTION("AW9201 Touchkey Driver");
 +MODULE_AUTHOR("<lijunjiea@awinic.com>");
 diff --git a/drivers/misc/mediatek/video/common/aal20/ddp_pwm.c b/drivers/misc/mediatek/video/common/aal20/ddp_pwm.c
-index 9f83202cd38..43ca224aab9 100644
+index 9f83202c..43ca224a 100644
 --- a/drivers/misc/mediatek/video/common/aal20/ddp_pwm.c
 +++ b/drivers/misc/mediatek/video/common/aal20/ddp_pwm.c
 @@ -387,6 +387,10 @@ int disp_bls_set_backlight(int level_1024)
@@ -55105,10 +55148,10 @@ index 9f83202cd38..43ca224aab9 100644
  }
  
 diff --git a/drivers/misc/mediatek/video/mt6735/ddp_dsi.c b/drivers/misc/mediatek/video/mt6735/ddp_dsi.c
-index bf66b77aa06..21bc7e75e03 100644
+index 52b18013..3632eaa8 100644
 --- a/drivers/misc/mediatek/video/mt6735/ddp_dsi.c
 +++ b/drivers/misc/mediatek/video/mt6735/ddp_dsi.c
-@@ -1233,7 +1233,7 @@ DSI_STATUS DSI_TXRX_Control(DISP_MODULE_ENUM module, cmdqRecHandle cmdq,
+@@ -1235,7 +1235,7 @@ DSI_STATUS DSI_TXRX_Control(DISP_MODULE_ENUM module, cmdqRecHandle cmdq,
  	bool null_packet_en = false;
  	/*bool err_correction_en = false; */
  	bool dis_eotp_en = false;
@@ -55117,7 +55160,7 @@ index bf66b77aa06..21bc7e75e03 100644
  	int max_return_size = 0;
  
  	switch (lane_num) {
-@@ -2857,12 +2857,7 @@ static void lcm_udelay(uint32_t us)
+@@ -2862,12 +2862,7 @@ static void lcm_udelay(uint32_t us)
  
  static void lcm_mdelay(uint32_t ms)
  {
@@ -55132,10 +55175,10 @@ index bf66b77aa06..21bc7e75e03 100644
  
  static void lcm_rar(uint32_t ms)
 diff --git a/drivers/power/mediatek/battery_common.c b/drivers/power/mediatek/battery_common.c
-index c7b283ce493..cfb6a4eecff 100644
+index bb5d682b..97555a07 100644
 --- a/drivers/power/mediatek/battery_common.c
 +++ b/drivers/power/mediatek/battery_common.c
-@@ -646,7 +646,11 @@ static int battery_get_property(struct power_supply *psy,
+@@ -622,7 +622,11 @@ static int battery_get_property(struct power_supply *psy,
  
  	switch (psp) {
  	case POWER_SUPPLY_PROP_STATUS:
@@ -55148,7 +55191,7 @@ index c7b283ce493..cfb6a4eecff 100644
  		break;
  	case POWER_SUPPLY_PROP_HEALTH:
  		val->intval = data->BAT_HEALTH;
-@@ -1510,7 +1514,7 @@ static ssize_t show_Power_Off_Voltage(struct device *dev, struct device_attribut
+@@ -1446,7 +1450,7 @@ static ssize_t show_Power_Off_Voltage(struct device *dev, struct device_attribut
  {
  	int ret_value = 1;
  
@@ -55157,7 +55200,7 @@ index c7b283ce493..cfb6a4eecff 100644
  	battery_log(BAT_LOG_CRTI, "[EM] Power_Off_Voltage : %d\n", ret_value);
  	return sprintf(buf, "%u\n", ret_value);
  }
-@@ -1850,6 +1854,7 @@ static kal_bool mt_battery_100Percent_tracking_check(void)
+@@ -1773,6 +1777,7 @@ static kal_bool mt_battery_100Percent_tracking_check(void)
  }
  
  
@@ -55165,7 +55208,7 @@ index c7b283ce493..cfb6a4eecff 100644
  static kal_bool mt_battery_nPercent_tracking_check(void)
  {
  	kal_bool resetBatteryMeter = KAL_FALSE;
-@@ -1901,19 +1906,40 @@ static kal_bool mt_battery_nPercent_tracking_check(void)
+@@ -1824,19 +1829,40 @@ static kal_bool mt_battery_nPercent_tracking_check(void)
  	return resetBatteryMeter;
  
  }
@@ -55211,7 +55254,7 @@ index c7b283ce493..cfb6a4eecff 100644
  	}
  
  	battery_log(BAT_LOG_CRTI, "0Percent, VBAT < %d UI_SOC=%d\r\n", SYSTEM_OFF_VOLTAGE,
-@@ -1922,7 +1948,6 @@ static kal_bool mt_battery_0Percent_tracking_check(void)
+@@ -1845,7 +1871,6 @@ static kal_bool mt_battery_0Percent_tracking_check(void)
  	return resetBatteryMeter;
  }
  
@@ -55219,7 +55262,7 @@ index c7b283ce493..cfb6a4eecff 100644
  static void mt_battery_Sync_UI_Percentage_to_Real(void)
  {
  	static struct timespec lasttime;
-@@ -1957,7 +1982,6 @@ static void mt_battery_Sync_UI_Percentage_to_Real(void)
+@@ -1880,7 +1905,6 @@ static void mt_battery_Sync_UI_Percentage_to_Real(void)
  		get_monotonic_boottime(&lasttime);
  
  		BMT_status.UI_SOC = BMT_status.SOC;
@@ -55227,7 +55270,7 @@ index c7b283ce493..cfb6a4eecff 100644
  	}
  
  	if (BMT_status.UI_SOC <= 0) {
-@@ -1971,9 +1995,6 @@ static void battery_update(struct battery_data *bat_data)
+@@ -1894,9 +1918,6 @@ static void battery_update(struct battery_data *bat_data)
  {
  	struct power_supply *bat_psy = &bat_data->psy;
  	kal_bool resetBatteryMeter = KAL_FALSE;
@@ -55237,7 +55280,7 @@ index c7b283ce493..cfb6a4eecff 100644
  
  	bat_data->BAT_TECHNOLOGY = POWER_SUPPLY_TECHNOLOGY_LION;
  	bat_data->BAT_HEALTH = POWER_SUPPLY_HEALTH_GOOD;
-@@ -2002,18 +2023,15 @@ static void battery_update(struct battery_data *bat_data)
+@@ -1925,18 +1946,15 @@ static void battery_update(struct battery_data *bat_data)
  		if (BMT_status.bat_vol <= batt_cust_data.v_0percent_tracking)
  			resetBatteryMeter = mt_battery_0Percent_tracking_check();
  		else
@@ -55260,7 +55303,7 @@ index c7b283ce493..cfb6a4eecff 100644
  		}
  	}
  
-@@ -2060,34 +2078,7 @@ static void battery_update(struct battery_data *bat_data)
+@@ -1979,34 +1997,7 @@ static void battery_update(struct battery_data *bat_data)
  	}
  #endif
  
@@ -55296,7 +55339,7 @@ index c7b283ce493..cfb6a4eecff 100644
  }
  
  void update_charger_info(int wireless_state)
-@@ -2428,7 +2419,7 @@ void mt_battery_GetBatteryData(void)
+@@ -2347,7 +2338,7 @@ void mt_battery_GetBatteryData(void)
  	bat_vol = battery_meter_get_battery_voltage(KAL_TRUE);
  	Vsense = battery_meter_get_VSense();
  	if (upmu_is_chr_det() == KAL_TRUE)
@@ -55305,7 +55348,7 @@ index c7b283ce493..cfb6a4eecff 100644
  	else
  		ICharging = 0;
  
-@@ -3572,11 +3563,6 @@ void check_battery_exist(void)
+@@ -3491,11 +3482,6 @@ void check_battery_exist(void)
  				    baton_count);
  
  			battery_charging_control(CHARGING_CMD_ENABLE, &charging_enable);
@@ -55318,7 +55361,7 @@ index c7b283ce493..cfb6a4eecff 100644
  	}
  #endif
 diff --git a/drivers/power/mediatek/battery_meter.c b/drivers/power/mediatek/battery_meter.c
-index 68e06eb2a9b..34e49e36dcb 100644
+index 68e06eb2..34e49e36 100644
 --- a/drivers/power/mediatek/battery_meter.c
 +++ b/drivers/power/mediatek/battery_meter.c
 @@ -821,23 +821,21 @@ int BattThermistorConverTemp(int Res)
@@ -55577,7 +55620,7 @@ index 68e06eb2a9b..34e49e36dcb 100644
  				bm_print(BM_LOG_CRTI,
  					 "[FGADC] gFG_capacity_by_v=%d, gFG_capacity_by_sw_ocv=%d use HWOCV\n",
 diff --git a/drivers/power/mediatek/switch_charging.c b/drivers/power/mediatek/switch_charging.c
-index e49cfdec5d8..d37903b21e3 100644
+index e49cfdec..d37903b2 100644
 --- a/drivers/power/mediatek/switch_charging.c
 +++ b/drivers/power/mediatek/switch_charging.c
 @@ -466,55 +466,10 @@ unsigned int set_chr_input_current_limit(int current_limit)
@@ -55639,7 +55682,7 @@ index e49cfdec5d8..d37903b21e3 100644
  
  int mtk_chr_reset_aicr_upper_bound(void)
 diff --git a/drivers/usb/gadget/function/f_mtp.c b/drivers/usb/gadget/function/f_mtp.c
-index f111552e03f..1d10010701a 100644
+index 9620bec6..fb1993f6 100644
 --- a/drivers/usb/gadget/function/f_mtp.c
 +++ b/drivers/usb/gadget/function/f_mtp.c
 @@ -584,7 +584,7 @@ static ssize_t mtp_read(struct file *fp, char __user *buf,
@@ -55652,20 +55695,30 @@ index f111552e03f..1d10010701a 100644
  			mtp_dbg_dump();
  
 diff --git a/scripts/drvgen/drvgen.mk b/scripts/drvgen/drvgen.mk
-index 17f5f7b7273..4e7a96f2712 100644
+index c4a0f25a..db1e9c3b 100644
 --- a/scripts/drvgen/drvgen.mk
 +++ b/scripts/drvgen/drvgen.mk
-@@ -70,7 +70,7 @@ DRVGEN_TOOL := $(srctree)/tools/dct/DrvGen.py
+@@ -59,7 +59,7 @@ DRVGEN_FIG := $(wildcard $(dir $(DRVGEN_TOOL))config/*.fig)
  .PHONY: drvgen
  drvgen: $(DRVGEN_FILE_LIST)
- $(DRVGEN_FILE_LIST): $(DRVGEN_TOOL) $(DWS_FILE) $(DTS_FILES)
--	for i in $(DTS_FILES); do \
-+	@for i in $(DTS_FILES); do \
- 		base_prj=`grep -m 1 "#include [<\"].*\/cust\.dtsi[>\"]" $$i | sed 's/#include [<"]//g' | sed 's/\/cust\.dtsi[>"]//g'`;\
+ $(DRVGEN_FILE_LIST): $(DRVGEN_TOOL) $(DWS_FILE) $(DRVGEN_FIG) $(PROJ_DTS_FILES)
+-	for i in $(PROJ_DTS_FILES); do \
++	@for i in $(PROJ_DTS_FILES); do \
+ 		base_prj=`grep -m 1 '#include [<\"].*\/cust\.dtsi[>\"]' $$i | sed 's/#include [<"]//g'\
+ 	       	| sed 's/\/cust\.dtsi[>"]//g' | sed 's/\/\*//g' | sed 's/\*\///g' | sed 's/ //g'`\
  		prj_path=$(DRVGEN_OUT)/$$base_prj ;\
- 		dws_path=$(DWS_PREFIX)$$base_prj$(DWS_SUFFIX) ;\
+diff --git a/tools/dct/DrvGen.py b/tools/dct/DrvGen.py
+index ebc280c6..6e354844 100755
+--- a/tools/dct/DrvGen.py
++++ b/tools/dct/DrvGen.py
+@@ -1,4 +1,4 @@
+-#! /usr/bin/python
++#! /usr/bin/python2
+ # -*- coding: utf-8 -*-
+ 
+ # Copyright (C) 2016 MediaTek Inc.
 diff --git a/tools/dct/old_dct/EINT_YuSu.cmp b/tools/dct/old_dct/EINT_YuSu.cmp
-index cbf62cde6c4..a9bb5aa19c2 100644
+index cbf62cde..a9bb5aa1 100644
 --- a/tools/dct/old_dct/EINT_YuSu.cmp
 +++ b/tools/dct/old_dct/EINT_YuSu.cmp
 @@ -30,6 +30,7 @@ OTG_IDDIG
@@ -55677,7 +55730,7 @@ index cbf62cde6c4..a9bb5aa19c2 100644
  MT6329_PMIC
  EINT_HDMI_HPD
 diff --git a/tools/dct/old_dct/GPIO_YuSu.cmp b/tools/dct/old_dct/GPIO_YuSu.cmp
-index 3c877ce470e..c14e0fe13e8 100644
+index 3c877ce4..c14e0fe1 100644
 --- a/tools/dct/old_dct/GPIO_YuSu.cmp
 +++ b/tools/dct/old_dct/GPIO_YuSu.cmp
 @@ -549,6 +549,7 @@ GPIO_SMARTPA_LDO_EN_PIN
@@ -55700,7 +55753,7 @@ index 3c877ce470e..c14e0fe13e8 100644
  GPIO_CAMERA_VCAMA_ENABLE_PIN
  GPIO_USB_REDRI_SW_C1_PIN
 diff --git a/tools/dct/old_dct/I2C_YuSu.cmp b/tools/dct/old_dct/I2C_YuSu.cmp
-index bd10a4b6c13..dbe8a552b50 100644
+index bd10a4b6..dbe8a552 100644
 --- a/tools/dct/old_dct/I2C_YuSu.cmp
 +++ b/tools/dct/old_dct/I2C_YuSu.cmp
 @@ -19,6 +19,12 @@ STROBE_MAIN_2
@@ -55723,3 +55776,6 @@ index bd10a4b6c13..dbe8a552b50 100644
 -#endif /* _CUST_I2C_H */
 \ No newline at end of file
 +#endif /* _CUST_I2C_H */
+-- 
+2.22.0
+

@@ -32,8 +32,8 @@ LOCAL_MODULE_SUFFIX := $(strip $(2))
 LOCAL_MODULE_CLASS := $(strip $(3))
 LOCAL_SRC_FILES_arm64 := $(strip $(4))$(strip $(1))$(strip $(2))
 LOCAL_SRC_FILES_arm   := $(strip $(5))$(strip $(1))$(strip $(2))
-LOCAL_INIT_RC := $(strip $(6))
-LOCAL_MULTILIB := $(if $(strip $(4)),both,32)
+LOCAL_INIT_RC := $(patsubst init_rc/%,init_rc/p0/%,$(6))
+LOCAL_MULTILIB := $(if $(filter EXECUTABLES,$(3)),$(if $(strip $(4)),first,32),$(if $(strip $(4)),both,32))
 LOCAL_PROPRIETARY_MODULE := true
 LOCAL_MODULE_OWNER := mtk
 include $$(BUILD_PREBUILT)
@@ -256,13 +256,14 @@ endif#CUSTOM_MODEM
 
 
 LOCAL_PATH := device/mediatek/build/build/tools/modem
-MTK_MODEM_PARTITION_FILES := $(foreach item,md1img.img md1dsp.img md1arm7.img md3img.img,$(if $(filter %/$(item),$(MTK_MODEM_DATABASE_FILES)),,$(if $(wildcard $(LOCAL_PATH)/$(item)),$(item))))
+MTK_MODEM_PARTITION_FILES := $(foreach item,md1img.img $(if $(filter yes,$(MTK_SINGLE_BIN_MODEM_SUPPORT)),,md1dsp.img) md1arm7.img md3img.img,$(if $(filter %/$(item),$(MTK_MODEM_DATABASE_FILES)),,$(if $(wildcard $(LOCAL_PATH)/$(item)),$(item))))
 $(info Use default MTK_MODEM_PARTITION_FILES for $(strip $(MTK_MODEM_PARTITION_FILES)))
 $(foreach item,$(MTK_MODEM_PARTITION_FILES),$(eval $(call mtk-install-modem,$(item),$(PRODUCT_OUT))))
 ALL_DEFAULT_INSTALLED_MODULES += $(MTK_MODEM_INSTALLED_MODULES)
 
-MTK_MODEM_REMOVED_MODULES := $(filter-out $(MTK_MODEM_INSTALLED_MODULES),$(wildcard $(TARGET_OUT_VENDOR)/firmware/modem*.img $(TARGET_OUT_VENDOR)/firmware/dsp_*.bin $(TARGET_OUT_VENDOR)/firmware/catcher_filter_*.bin $(TARGET_OUT_VENDOR)/firmware/em_filter_*.bin $(TARGET_OUT_VENDOR)/firmware/armv7_*.bin $(TARGET_OUT_VENDOR_ETC)/mddb/*))
+MTK_MODEM_REMOVED_MODULES := $(filter-out $(MTK_MODEM_INSTALLED_MODULES),$(wildcard $(PRODUCT_OUT)/md1dsp.img $(TARGET_OUT_VENDOR)/firmware/modem*.img $(TARGET_OUT_VENDOR)/firmware/dsp_*.bin $(TARGET_OUT)/firmware/catcher_filter_*.bin $(TARGET_OUT)/firmware/em_filter_*.bin $(TARGET_OUT_VENDOR)/firmware/armv7_*.bin $(TARGET_OUT_ETC)/mddb/*))
 
+ifneq ($(MTK_BUILD_IGNORE_IMS_REPO),yes)
 $(foreach m,$(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_PACKAGES),\
     $(if $(filter $(MTK_PATH_MODEM)/%,$(ALL_MODULES.$(m).PATH)),\
         $(eval MTK_MODEM_APPS_FILES += $(ALL_MODULES.$(m).INSTALLED))\
@@ -279,11 +280,15 @@ $(foreach cf,$(PRODUCT_COPY_FILES),\
         $(eval MTK_MODEM_APPS_FILES += $(_fulldest))\
     )\
 )
+endif
 
 .PHONY: update-modem clean-modem
 clean-modem:
 update-modem: snod
 snod: $(MTK_MODEM_INSTALLED_MODULES) $(MTK_MODEM_APPS_FILES)
+ifeq ($(BOARD_AVB_ENABLE),true)
+update-modem: $(PRODUCT_OUT)/vbmeta.img $(PRODUCT_OUT)/boot.img
+endif
 ifdef BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE
 update-modem: vnod
 vnod: $(MTK_MODEM_INSTALLED_MODULES) $(MTK_MODEM_APPS_FILES)

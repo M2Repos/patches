@@ -1,6 +1,6 @@
 #!/bin/sh
 rootdirectory="$PWD"
-dirs="device frameworks/base kernel-3.18 vendor/mediatek/proprietary/custom vendor/mediatek/proprietary/hardware"
+dirs="device/mediatek/common device/mediatek/mt6735 frameworks/base kernel-3.18 vendor/mediatek/proprietary/custom vendor/mediatek/proprietary/hardware/liblights"
 
 for dir in $dirs ; do
     cd $rootdirectory
@@ -10,7 +10,7 @@ for dir in $dirs ; do
 done
 
 cd $rootdirectory
-rm -r vendor/mediatek/libs/mblu2
+rm -r device/meizu
 rm -r vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/mblu2
 rm -r vendor/mediatek/proprietary/modem
 echo "Done!"

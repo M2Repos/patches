@@ -1,0 +1,42 @@
+From 0ef23fd04918e4f55deb7cf411b4e4c002ed6c01 Mon Sep 17 00:00:00 2001
+From: Dinolek <18579460+Dinolek@users.noreply.github.com>
+Date: Mon, 24 Jun 2019 20:45:12 +0200
+Subject: [PATCH] mt6735
+
+---
+ device.mk | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
+
+diff --git a/device.mk b/device.mk
+index 614d93c..6e17760 100644
+--- a/device.mk
++++ b/device.mk
+@@ -703,15 +703,7 @@ ifeq ($(strip $(MTK_ENGINEERMODE_APP)), yes)
+   ifeq ($(strip $(MTK_NFC_SUPPORT)), yes)
+     PRODUCT_PACKAGES += libem_nfc_jni
+   endif
+-  ifneq ($(strip $(MTK_GMO_RAM_OPTIMIZE)), yes)
+-        ifneq ($(wildcard vendor/mediatek/internal/em_enable),)
+-            PRODUCT_PACKAGES += em_svr
+-        else
+-            ifeq  ($(strip $(MTK_CUSTOM_USERLOAD_ENGINEERMODE)), yes)
+-              PRODUCT_PACKAGES += em_svr
+-            endif
+-        endif
+-  endif
++  PRODUCT_PACKAGES += em_svr
+ endif
+ 
+ ifeq ($(strip $(MTK_RCSE_SUPPORT)), yes)
+@@ -802,7 +794,7 @@ ifeq ($(strip $(MTK_DATA_TRANSFER_APP)), yes)
+ endif
+ 
+ ifneq ($(strip $(MTK_A1_FEATURE)),yes)
+-  PRODUCT_PACKAGES += FMRadio
++#  PRODUCT_PACKAGES += FMRadio
+ endif
+ 
+ ifeq ($(strip $(MTK_CAM_LOMO_SUPPORT)), yes)
+-- 
+2.22.0
+

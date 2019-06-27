@@ -1,0 +1,55 @@
+From 4b2b753a22d4a40db6dfe6b3fcb42c57073c6551 Mon Sep 17 00:00:00 2001
+From: Dinolek <18579460+Dinolek@users.noreply.github.com>
+Date: Mon, 24 Jun 2019 20:43:29 +0200
+Subject: [PATCH] common
+
+---
+ device.mk | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
+
+diff --git a/device.mk b/device.mk
+index 2d82a52..5d93d82 100644
+--- a/device.mk
++++ b/device.mk
+@@ -1716,9 +1716,9 @@ ifeq ($(strip $(OPTR_SPEC_SEG_DEF)),NONE)
+ endif
+ 
+ #For 3rd party NLP provider
+-PRODUCT_PACKAGES += Baidu_Location
+-PRODUCT_PACKAGES += liblocSDK6c
+-PRODUCT_PACKAGES += libnetworklocation
++#PRODUCT_PACKAGES += Baidu_Location
++#PRODUCT_PACKAGES += liblocSDK6c
++#PRODUCT_PACKAGES += libnetworklocation
+ ifneq ($(strip $(MTK_BASIC_PACKAGE)), yes)
+   ifneq ($(strip $(MTK_BSP_PACKAGE)), yes)
+     PRODUCT_PROPERTY_OVERRIDES += persist.mtk_nlp_switch_support=1
+@@ -3721,10 +3721,10 @@ ifneq ($(wildcard vendor/mediatek/proprietary/packages/apps/DeskClock/Android.mk
+ endif
+ 
+ # SystemUI AOSP code will be replaced by MTK
+-ifneq ($(wildcard vendor/mediatek/proprietary/packages/apps/SystemUI/Android.mk),)
+-PRODUCT_PACKAGES += \
+-    MtkSystemUI
+-endif
++#ifneq ($(wildcard vendor/mediatek/proprietary/packages/apps/SystemUI/Android.mk),)
++#PRODUCT_PACKAGES += \
++#    MtkSystemUI
++#endif
+ 
+ # Stk APP built in according to package.
+ ifeq ($(strip $(MTK_BASIC_PACKAGE)),yes)
+@@ -4039,7 +4039,9 @@ endif
+     PRODUCT_VENDOR_VERITY_PARTITION := /dev/block/platform/bootdevice/by-name/vendor
+ ifneq ($(strip $(BOARD_AVB_ENABLE)), true)
+     # if avb2.0 is not enabled
+-    $(call inherit-product, build/target/product/verity.mk)
++    ifneq ($(strip $(MTK_DM_VERITY_OFF)), yes)
++        $(call inherit-product, build/target/product/verity.mk)
++    endif
+ else
+     # if avb2.0 is enabled
+     # BOARD_BOOTIMAGE_PARTITION_SIZE and BOARD_RECOVERYIMAGE_PARTITION_SIZE
+-- 
+2.22.0
+

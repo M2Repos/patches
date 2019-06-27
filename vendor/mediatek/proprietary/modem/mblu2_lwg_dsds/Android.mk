@@ -3,6 +3,7 @@ LOCAL_PATH := $(call my-dir)
 MTK_MODEM_LOCAL_PATH := $(LOCAL_PATH)
 MTK_MODEM_MDDB_FILES :=
 MTK_MODEM_FIRMWARE_FILES :=
+MTK_MODEM_VENDOR_FIRMWARE_FILES :=
 MTK_MODEM_PARTITION_FILES :=
 MTK_MODEM_MAP_X_1_TO_YY := 2g wg tg lwg ltg sglte ultg ulwg ulwtg ulwcg ulwctg
 MTK_MODEM_MAP_X_3_TO_YY := 2g 3g ulwcg ulwctg
@@ -13,9 +14,9 @@ $(foreach x,1,\
     $(foreach yy,$(MTK_MODEM_MAP_X_$(x)_TO_YY),\
       $(foreach z,n,\
         $(if $(wildcard $(MTK_MODEM_LOCAL_PATH)/modem_$(x)_$(yy)_$(z).img),\
-          $(eval MTK_MODEM_FIRMWARE_FILES += modem_$(x)_$(yy)_$(z).img)\
+          $(eval MTK_MODEM_VENDOR_FIRMWARE_FILES += modem_$(x)_$(yy)_$(z).img)\
           $(if $(filter l%g sglte ul%g,$(yy)),\
-            $(eval MTK_MODEM_FIRMWARE_FILES += dsp_$(x)_$(yy)_$(z).bin)\
+            $(eval MTK_MODEM_VENDOR_FIRMWARE_FILES += dsp_$(x)_$(yy)_$(z).bin)\
           )\
           $(if $(filter yes,$(strip $(MTK_MDLOGGER_SUPPORT))),\
             $(eval MTK_MODEM_FIRMWARE_FILES += catcher_filter_$(x)_$(yy)_$(z).bin)\
@@ -24,7 +25,7 @@ $(foreach x,1,\
             $(eval MTK_MODEM_FIRMWARE_FILES += em_filter_$(x)_$(yy)_$(z).bin)\
           )\
           $(if $(wildcard $(MTK_MODEM_LOCAL_PATH)/armv7_$(x)_$(yy)_$(z).bin),\
-            $(eval MTK_MODEM_FIRMWARE_FILES += armv7_$(x)_$(yy)_$(z).bin)\
+            $(eval MTK_MODEM_VENDOR_FIRMWARE_FILES += armv7_$(x)_$(yy)_$(z).bin)\
           )\
         )\
       )\
@@ -36,19 +37,19 @@ $(foreach x,3,\
     $(foreach yy,$(MTK_MODEM_MAP_X_$(x)_TO_YY),\
       $(foreach z,n,\
         $(if $(wildcard $(MTK_MODEM_LOCAL_PATH)/modem_$(x)_$(yy)_$(z).img),\
-          $(eval MTK_MODEM_FIRMWARE_FILES += modem_$(x)_$(yy)_$(z).img)\
+          $(eval MTK_MODEM_VENDOR_FIRMWARE_FILES += modem_$(x)_$(yy)_$(z).img)\
         )\
         $(if $(wildcard $(MTK_MODEM_LOCAL_PATH)/boot_$(x)_$(yy)_$(z).rom),\
-          $(eval MTK_MODEM_FIRMWARE_FILES += boot_$(x)_$(yy)_$(z).rom)\
+          $(eval MTK_MODEM_VENDOR_FIRMWARE_FILES += boot_$(x)_$(yy)_$(z).rom)\
         )\
         $(if $(wildcard $(MTK_MODEM_LOCAL_PATH)/fsm_rf_df_$(x)_$(yy)_$(z).img),\
-          $(eval MTK_MODEM_FIRMWARE_FILES += fsm_rf_df_$(x)_$(yy)_$(z).img)\
+          $(eval MTK_MODEM_VENDOR_FIRMWARE_FILES += fsm_rf_df_$(x)_$(yy)_$(z).img)\
         )\
         $(if $(wildcard $(MTK_MODEM_LOCAL_PATH)/fsm_rw_df_$(x)_$(yy)_$(z).img),\
-          $(eval MTK_MODEM_FIRMWARE_FILES += fsm_rw_df_$(x)_$(yy)_$(z).img)\
+          $(eval MTK_MODEM_VENDOR_FIRMWARE_FILES += fsm_rw_df_$(x)_$(yy)_$(z).img)\
         )\
         $(if $(wildcard $(MTK_MODEM_LOCAL_PATH)/fsm_cust_df_$(x)_$(yy)_$(z).img),\
-          $(eval MTK_MODEM_FIRMWARE_FILES += fsm_cust_df_$(x)_$(yy)_$(z).img)\
+          $(eval MTK_MODEM_VENDOR_FIRMWARE_FILES += fsm_cust_df_$(x)_$(yy)_$(z).img)\
         )\
         $(if $(wildcard $(MTK_MODEM_LOCAL_PATH)/catcher_filter_$(x)_$(yy)_$(z).bin),\
           $(eval MTK_MODEM_FIRMWARE_FILES += catcher_filter_$(x)_$(yy)_$(z).bin)\
@@ -87,6 +88,7 @@ endif
 ifeq ($(strip $(MTK_SINGLE_BIN_MODEM_SUPPORT)),yes)
 MTK_MODEM_MDDB_FILES :=
 MTK_MODEM_FIRMWARE_FILES :=
+MTK_MODEM_VENDOR_FIRMWARE_FILES :=
 MTK_MODEM_FILTER_FILES :=
 else
 MTK_MODEM_PARTITION_FILES += $(if $(wildcard $(MTK_MODEM_LOCAL_PATH)/md1img.img),md1img.img)
@@ -95,17 +97,9 @@ MTK_MODEM_PARTITION_FILES += $(if $(wildcard $(MTK_MODEM_LOCAL_PATH)/md1arm7.img
 MTK_MODEM_PARTITION_FILES += $(if $(wildcard $(MTK_MODEM_LOCAL_PATH)/md3img.img),md3img.img)
 endif
 
-$(foreach item,$(MTK_MODEM_FIRMWARE_FILES),$(eval $(call mtk-install-modem,$(item),$(TARGET_OUT_VENDOR)/firmware)))
-MTK_MODEM_MDDB_FILES_1 :=
-ifneq ($(strip $(MTK_MODEM_MDDB_SYMBOL_LINK)),yes)
-ifneq ($(strip $(MTK_MODEM_MDDB_FILES)),)
-MTK_MODEM_MDDB_FILES_1 := $(firstword $(MTK_MODEM_MDDB_FILES))
-MTK_MODEM_MDDB_SYMBOL_LINK := yes
-endif
-endif
-MTK_MODEM_MDDB_FILES_2 := $(filter-out $(MTK_MODEM_MDDB_FILES_1),$(MTK_MODEM_MDDB_FILES))
-$(foreach item,$(MTK_MODEM_MDDB_FILES_1),$(eval $(call mtk-install-modem,$(item),$(TARGET_OUT_VENDOR_ETC)/mddb,mkdir -p $(TARGET_OUT_ETC);ln -snf /vendor/etc/mddb $(TARGET_OUT_ETC)/mddb)))
-$(foreach item,$(MTK_MODEM_MDDB_FILES_2),$(eval $(call mtk-install-modem,$(item),$(TARGET_OUT_VENDOR_ETC)/mddb)))
+$(foreach item,$(MTK_MODEM_FIRMWARE_FILES),$(eval $(call mtk-install-modem,$(item),$(TARGET_OUT_ETC)/firmware)))
+$(foreach item,$(MTK_MODEM_VENDOR_FIRMWARE_FILES),$(eval $(call mtk-install-modem,$(item),$(TARGET_OUT_VENDOR)/firmware)))
+$(foreach item,$(MTK_MODEM_MDDB_FILES),$(eval $(call mtk-install-modem,$(item),$(TARGET_OUT_ETC)/mddb)))
 $(foreach item,$(MTK_MODEM_PARTITION_FILES),$(eval $(call mtk-install-modem,$(item),$(PRODUCT_OUT))))
 ifneq ($(strip $(MTK_MODEM_APPS_INCLUDE_FIRST)),yes)
 include $(sort $(wildcard $(LOCAL_PATH)/makefile/inst_*.mk))

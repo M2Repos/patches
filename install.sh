@@ -1,6 +1,6 @@
 #!/bin/sh
 rootdirectory="$PWD"
-dirs="device frameworks/base kernel-3.18 vendor/mediatek/proprietary/custom vendor/mediatek/proprietary/hardware"
+dirs="device/mediatek/common device/mediatek/mt6735 frameworks/base kernel-3.18 vendor/mediatek/proprietary/custom vendor/mediatek/proprietary/hardware/liblights"
 
 for dir in $dirs ; do
     cd $rootdirectory
@@ -10,7 +10,7 @@ for dir in $dirs ; do
 done
 
 cd $rootdirectory
-cp -r patches/vendor/mediatek/libs/mblu2 vendor/mediatek/libs/mblu2
+cp -r patches/device/meizu device/.
 cp -r vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/k37tv1_64_bsp vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/mblu2
 mv vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/mblu2/k37tv1_64_bsp.mk vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/mblu2/mblu2.mk
 sed -i 's/TARGET=k37tv1_64_bsp/TARGET=mblu2/' vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/mblu2/mblu2.mk
