@@ -1,0 +1,86 @@
+From 738cc82e1cdd170217e15e5372d4e54fb669861e Mon Sep 17 00:00:00 2001
+From: Dinolek <18579460+Dinolek@users.noreply.github.com>
+Date: Tue, 13 Aug 2019 00:38:46 +0200
+Subject: [PATCH] wlan0 hotspot
+
+---
+ wmt_cdev_wifi.c | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+diff --git a/wmt_cdev_wifi.c b/wmt_cdev_wifi.c
+index f01739f..cdd3417 100644
+--- a/wmt_cdev_wifi.c
++++ b/wmt_cdev_wifi.c
+@@ -86,6 +86,7 @@ static struct device *wmtwifi_dev;
+ static struct semaphore wr_mtx;
+ 
+ #define WLAN_IFACE_NAME "wlan0"
++#define LEGACY_IFACE_NAME "legacy0"
+ 
+ enum {
+ 	WLAN_MODE_HALT,
+@@ -98,6 +99,8 @@ static int32_t wlan_mode = WLAN_MODE_HALT;
+ static int32_t powered;
+ static int32_t isconcurrent;
+ static char *ifname = WLAN_IFACE_NAME;
++volatile INT32 wlan_if_changed = 0;
++EXPORT_SYMBOL(wlan_if_changed);
+ 
+ /*******************************************************************
+  */
+@@ -344,6 +347,8 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
+ 				powered = 0;
+ 				retval = count;
+ 				wlan_mode = WLAN_MODE_HALT;
++				ifname = WLAN_IFACE_NAME;
++				wlan_if_changed = 0;
+ 			}
+ 		} else if (local[0] == '1') {
+ 			if (powered == 1) {
+@@ -462,6 +467,21 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
+ 			}
+ 
+ 			if (local[0] == 'S' || local[0] == 'P') {
++				/* Restore NIC name to wlan0 */
++				rtnl_lock();
++				if (strcmp(ifname, WLAN_IFACE_NAME) != 0) {
++					if (dev_change_name(netdev, WLAN_IFACE_NAME) != 0) {
++						WIFI_ERR_FUNC("netdev name change to %s fail\n", WLAN_IFACE_NAME);
++						rtnl_unlock();
++						goto done;
++					} else {
++						WIFI_INFO_FUNC("netdev name changed %s --> %s\n", ifname,
++							       WLAN_IFACE_NAME);
++						ifname = WLAN_IFACE_NAME;
++						wlan_if_changed = 0;
++					}
++				}
++				rtnl_unlock();
+ 				p2pmode.u4Enable = 1;
+ 				p2pmode.u4Mode = 0;
+ 				if (pf_set_p2p_mode(netdev, p2pmode) != 0) {
+@@ -472,6 +492,21 @@ ssize_t WIFI_write(struct file *filp, const char __user *buf, size_t count, loff
+ 					retval = count;
+ 				}
+ 			} else if (local[0] == 'A') {
++				/* Change NIC name to legacy0, since wlan0 is used for AP */
++				rtnl_lock();
++				if (strcmp(ifname, LEGACY_IFACE_NAME) != 0) {
++					if (dev_change_name(netdev, LEGACY_IFACE_NAME) != 0) {
++						WIFI_ERR_FUNC("netdev name change to %s fail\n", LEGACY_IFACE_NAME);
++						rtnl_unlock();
++						goto done;
++					} else {
++						WIFI_INFO_FUNC("netdev name changed %s --> %s\n", ifname,
++							       LEGACY_IFACE_NAME);
++						ifname = LEGACY_IFACE_NAME;
++						wlan_if_changed = 1;
++					}
++				}
++				rtnl_unlock();
+ 				p2pmode.u4Enable = 1;
+ 				p2pmode.u4Mode = 1;
+ 				if (pf_set_p2p_mode(netdev, p2pmode) != 0) {
+-- 
+2.22.0
+

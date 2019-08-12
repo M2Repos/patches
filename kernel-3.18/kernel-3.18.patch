@@ -1,6 +1,6 @@
-From 7491ac2dc07889ca53685f57a87484cc2086bdeb Mon Sep 17 00:00:00 2001
+From ca51a948b390bdf9445fa4bb83116684f60bd916 Mon Sep 17 00:00:00 2001
 From: Dinolek <18579460+Dinolek@users.noreply.github.com>
-Date: Mon, 24 Jun 2019 20:07:50 +0200
+Date: Tue, 13 Aug 2019 00:35:14 +0200
 Subject: [PATCH] kernel-3.18
 
 ---
@@ -8,7 +8,7 @@ Subject: [PATCH] kernel-3.18
  arch/arm64/boot/dts/mblu2.dts                 |  756 +++
  arch/arm64/boot/dts/mblu2_cust.dtsi           |  279 +
  arch/arm64/boot/dts/mt6735.dts                |  886 ---
- arch/arm64/configs/mblu2_defconfig            | 3821 +++++++++++
+ arch/arm64/configs/mblu2_defconfig            | 3822 +++++++++++
  drivers/input/keyboard/mediatek/kpd.c         |    2 +-
  .../input/touchscreen/mediatek/FT5446/Kconfig |   86 +
  .../touchscreen/mediatek/FT5446/Makefile      |   18 +
@@ -34,6 +34,7 @@ Subject: [PATCH] kernel-3.18
  drivers/input/touchscreen/mediatek/Makefile   |    1 +
  drivers/misc/mediatek/Kconfig                 |    1 +
  drivers/misc/mediatek/Makefile                |    1 +
+ drivers/misc/mediatek/accdet/mt6735/accdet.c  |    1 +
  .../src/legacy/mt6735/s5k3l2_eeprom/Makefile  |    3 +
  .../mt6735/s5k3l2_eeprom/s5k3l2_eeprom.c      |  703 ++
  .../mt6735/s5k3l2_eeprom/s5k3l2_eeprom.h      |   35 +
@@ -121,18 +122,23 @@ Subject: [PATCH] kernel-3.18
  drivers/misc/mediatek/touchkey/Makefile       |    1 +
  .../misc/mediatek/touchkey/aw9201/Makefile    |    1 +
  .../misc/mediatek/touchkey/aw9201/aw9201.c    |  752 +++
+ drivers/misc/mediatek/video/Kconfig           |    6 +
  .../mediatek/video/common/aal20/ddp_pwm.c     |    4 +
+ .../mediatek/video/common/corr10/ddp_gamma.c  |   10 +-
  drivers/misc/mediatek/video/mt6735/ddp_dsi.c  |    9 +-
+ .../misc/mediatek/video/mt6735/mtk_disp_mgr.c |   93 +-
  drivers/power/mediatek/battery_common.c       |   92 +-
  drivers/power/mediatek/battery_meter.c        |  212 +-
  drivers/power/mediatek/switch_charging.c      |   49 +-
+ drivers/usb/gadget/function/f_fs.c            |    4 +
  drivers/usb/gadget/function/f_mtp.c           |    2 +-
+ net/core/dev.c                                |    1 +
  scripts/drvgen/drvgen.mk                      |    2 +-
  tools/dct/DrvGen.py                           |    2 +-
  tools/dct/old_dct/EINT_YuSu.cmp               |    1 +
  tools/dct/old_dct/GPIO_YuSu.cmp               |    5 +
  tools/dct/old_dct/I2C_YuSu.cmp                |    8 +-
- 128 files changed, 48480 insertions(+), 5079 deletions(-)
+ 134 files changed, 48594 insertions(+), 5081 deletions(-)
  create mode 100644 arch/arm64/boot/dts/mblu2.dts
  create mode 100644 arch/arm64/boot/dts/mblu2_cust.dtsi
  create mode 100644 arch/arm64/configs/mblu2_defconfig
@@ -2165,10 +2171,10 @@ index d4dd14d6..7b4ee292 100644
  			compatible = "mediatek, dsi_te_1-eint";
 diff --git a/arch/arm64/configs/mblu2_defconfig b/arch/arm64/configs/mblu2_defconfig
 new file mode 100644
-index 00000000..fbeb30b6
+index 00000000..9c09f825
 --- /dev/null
 +++ b/arch/arm64/configs/mblu2_defconfig
-@@ -0,0 +1,3821 @@
+@@ -0,0 +1,3822 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
 +# Linux/arm64 3.18.119 Kernel Configuration
@@ -3432,6 +3438,7 @@ index 00000000..fbeb30b6
 +CONFIG_MTK_VIDEOCODEC_DRIVER=y
 +CONFIG_MTK_FB=y
 +CONFIG_MTK_VIDEOX=y
++CONFIG_MTK_VIDEOX_LIVEDISPLAY=y
 +CONFIG_MTK_LCM_PHYSICAL_ROTATION="0"
 +CONFIG_LCM_HEIGHT="1280"
 +CONFIG_LCM_WIDTH="720"
@@ -27025,6 +27032,18 @@ index 0ca10bee..dec683a4 100644
  obj-$(CONFIG_MTK_FB) += video/
  obj-$(CONFIG_MTK_GPU_SUPPORT) += gpu/
  obj-$(CONFIG_MTK_SMI_EXT)	+= smi/
+diff --git a/drivers/misc/mediatek/accdet/mt6735/accdet.c b/drivers/misc/mediatek/accdet/mt6735/accdet.c
+index 046ce9a0..70a79449 100644
+--- a/drivers/misc/mediatek/accdet/mt6735/accdet.c
++++ b/drivers/misc/mediatek/accdet/mt6735/accdet.c
+@@ -372,6 +372,7 @@ static void accdet_eint_work_callback(struct work_struct *work)
+ 		msleep(250);	/*PIN swap need ms*/
+ #endif
+ 
++		msleep(500);
+ 		accdet_init();	/*do set pwm_idle on in accdet_init*/
+ 
+ #ifdef CONFIG_ACCDET_PIN_RECOGNIZATION
 diff --git a/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/Makefile b/drivers/misc/mediatek/cam_cal/src/legacy/mt6735/s5k3l2_eeprom/Makefile
 new file mode 100644
 index 00000000..2fa52e81
@@ -55132,6 +55151,23 @@ index 00000000..4622b26c
 +MODULE_LICENSE("GPL");
 +MODULE_DESCRIPTION("AW9201 Touchkey Driver");
 +MODULE_AUTHOR("<lijunjiea@awinic.com>");
+diff --git a/drivers/misc/mediatek/video/Kconfig b/drivers/misc/mediatek/video/Kconfig
+index 8cc98d7a..0089631c 100644
+--- a/drivers/misc/mediatek/video/Kconfig
++++ b/drivers/misc/mediatek/video/Kconfig
+@@ -16,6 +16,12 @@ config MTK_VIDEOX
+ 	help
+ 	  CONFIG_MTK_VIDEOX
+ 
++config MTK_VIDEOX_LIVEDISPLAY
++	bool CONFIG_MTK_VIDEOX_LIVEDISPLAY
++	default n
++	help
++	  Enable the RGB interface for color calibration.
++
+ config MTK_LCM_PHYSICAL_ROTATION
+ 	string "MTK_LCM_PHYSICAL_ROTATION"
+ 	help
 diff --git a/drivers/misc/mediatek/video/common/aal20/ddp_pwm.c b/drivers/misc/mediatek/video/common/aal20/ddp_pwm.c
 index 9f83202c..43ca224a 100644
 --- a/drivers/misc/mediatek/video/common/aal20/ddp_pwm.c
@@ -55147,8 +55183,32 @@ index 9f83202c..43ca224a 100644
  	return level_1024;
  }
  
+diff --git a/drivers/misc/mediatek/video/common/corr10/ddp_gamma.c b/drivers/misc/mediatek/video/common/corr10/ddp_gamma.c
+index 20856440..c7a0b70e 100644
+--- a/drivers/misc/mediatek/video/common/corr10/ddp_gamma.c
++++ b/drivers/misc/mediatek/video/common/corr10/ddp_gamma.c
+@@ -182,10 +182,18 @@ static int disp_gamma_set_lut(const DISP_GAMMA_LUT_T __user *user_gamma_lut, voi
+ 		return -EFAULT;
+ 	}
+ 
++#ifdef CONFIG_MTK_VIDEOX_LIVEDISPLAY
++	if (virt_addr_valid(user_gamma_lut))
++		memcpy(gamma_lut, user_gamma_lut, sizeof(DISP_GAMMA_LUT_T));
++	else
++#endif
+ 	if (copy_from_user(gamma_lut, user_gamma_lut, sizeof(DISP_GAMMA_LUT_T)) != 0) {
++		GAMMA_ERR("disp_gamma_set_lut: cannot copy from user mem");
+ 		ret = -EFAULT;
+ 		kfree(gamma_lut);
+-	} else {
++	}
++
++	if (!ret) {
+ 		id = gamma_lut->hw_id;
+ 		if (0 <= id && id < DISP_GAMMA_TOTAL) {
+ 			mutex_lock(&g_gamma_global_lock);
 diff --git a/drivers/misc/mediatek/video/mt6735/ddp_dsi.c b/drivers/misc/mediatek/video/mt6735/ddp_dsi.c
-index 52b18013..3632eaa8 100644
+index 52b18013..a886b2e6 100644
 --- a/drivers/misc/mediatek/video/mt6735/ddp_dsi.c
 +++ b/drivers/misc/mediatek/video/mt6735/ddp_dsi.c
 @@ -1235,7 +1235,7 @@ DSI_STATUS DSI_TXRX_Control(DISP_MODULE_ENUM module, cmdqRecHandle cmdq,
@@ -55170,10 +55230,135 @@ index 52b18013..3632eaa8 100644
 -		msleep(ms);
 -		/* udelay(ms*1000); */
 -	}
-+	udelay(ms*160);
++	udelay(ms*220);
  }
  
  static void lcm_rar(uint32_t ms)
+diff --git a/drivers/misc/mediatek/video/mt6735/mtk_disp_mgr.c b/drivers/misc/mediatek/video/mt6735/mtk_disp_mgr.c
+index 9d9d41e6..798d4b96 100644
+--- a/drivers/misc/mediatek/video/mt6735/mtk_disp_mgr.c
++++ b/drivers/misc/mediatek/video/mt6735/mtk_disp_mgr.c
+@@ -105,6 +105,12 @@ static dev_t mtk_disp_mgr_devno;
+ static struct cdev *mtk_disp_mgr_cdev;
+ static struct class *mtk_disp_mgr_class;
+ 
++#ifdef CONFIG_MTK_VIDEOX_LIVEDISPLAY
++static struct mtk_rgb_work_queue {
++	struct work_struct work;
++	struct mutex lock;
++} mtk_rgb_work_queue;
++#endif
+ 
+ DEFINE_MUTEX(session_config_mutex);
+ disp_session_input_config _session_input[2][DISP_SESSION_MEMORY];
+@@ -2424,8 +2430,84 @@ static struct platform_device mtk_disp_mgr_device = {
+ 	.num_resources = 0,
+ };
+ 
++#ifdef CONFIG_MTK_VIDEOX_LIVEDISPLAY
++#define MAX_LUT_SCALE 2000
++#define PROGRESSION_SCALE 1000
++static u32 mtk_disp_ld_r = MAX_LUT_SCALE;
++static u32 mtk_disp_ld_g = MAX_LUT_SCALE;
++static u32 mtk_disp_ld_b = MAX_LUT_SCALE;
++
++static ssize_t mtk_disp_ld_get_rgb(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	return scnprintf(buf, PAGE_SIZE, "%d %d %d\n", mtk_disp_ld_r, mtk_disp_ld_g, mtk_disp_ld_b);
++}
++
++/**
++ * The default gamma array is an arithmetic progression with alpha=2 and n0=0 and
++ * n = 512.
++ *
++ * We scale it linearly with the color passed to this RGB interface. The display
++ * subsystem has a color precision of 10 bits which means that values from [0-1024[
++ * are acceptable.
++ *
++ * In order to avoid floating point computations in kernel space we scale the alpha
++ * value by 1000 and then scale back the result using integer division.
++ */
++static ssize_t mtk_disp_ld_set_rgb(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	int r = MAX_LUT_SCALE, g = MAX_LUT_SCALE, b = MAX_LUT_SCALE;
++
++	if (count > 19)
++		return -EINVAL;
++
++	sscanf(buf, "%d %d %d", &r, &g, &b);
++
++	if (r < 0 || r > MAX_LUT_SCALE) return -EINVAL;
++	if (g < 0 || g > MAX_LUT_SCALE) return -EINVAL;
++	if (b < 0 || b > MAX_LUT_SCALE) return -EINVAL;
++
++	cancel_work_sync(&mtk_rgb_work_queue.work);
++	mtk_disp_ld_r = r;
++	mtk_disp_ld_g = g;
++	mtk_disp_ld_b = b;
++	schedule_work(&mtk_rgb_work_queue.work);
++
++	return count;
++}
++
++static DEVICE_ATTR(rgb, S_IRUGO | S_IWUSR | S_IWGRP, mtk_disp_ld_get_rgb, mtk_disp_ld_set_rgb);
++
++static void mtk_disp_rgb_work(struct work_struct *work) {
++        struct mtk_rgb_work_queue *rgb_wq = container_of(work, struct mtk_rgb_work_queue, work);
++	int r = mtk_disp_ld_r, g = mtk_disp_ld_g, b = mtk_disp_ld_b;
++	int i, gammutR, gammutG, gammutB, ret;
++	DISP_GAMMA_LUT_T *gamma;
++
++	mutex_lock(&rgb_wq->lock);
++
++	gamma = kzalloc(sizeof(DISP_GAMMA_LUT_T), GFP_KERNEL);
++	gamma->hw_id = 0;
++	for (i = 0; i < 512; i++) {
++		gammutR = i * r / PROGRESSION_SCALE;
++		gammutG = i * g / PROGRESSION_SCALE;
++		gammutB = i * b / PROGRESSION_SCALE;
++
++		gamma->lut[i] = GAMMA_ENTRY(gammutR, gammutG, gammutB);
++	}
++
++	ret = primary_display_user_cmd(DISP_IOCTL_SET_GAMMALUT, (unsigned long)gamma);
++
++	kfree(gamma);
++	mutex_unlock(&rgb_wq->lock);
++}
++#endif
++
+ static int __init mtk_disp_mgr_init(void)
+ {
++	int rc = 0;
++
+ 	if (platform_device_register(&mtk_disp_mgr_device))
+ 		return -ENODEV;
+ 
+@@ -2434,12 +2516,21 @@ static int __init mtk_disp_mgr_init(void)
+ 		return -ENODEV;
+ 	}
+ 
++#ifdef CONFIG_MTK_VIDEOX_LIVEDISPLAY
++	rc = sysfs_create_file(&(mtk_disp_mgr_device.dev.kobj), &dev_attr_rgb.attr);
++	mutex_init(&mtk_rgb_work_queue.lock);
++	INIT_WORK(&mtk_rgb_work_queue.work, mtk_disp_rgb_work);
++#endif
+ 
+-	return 0;
++	return rc;
+ }
+ 
+ static void __exit mtk_disp_mgr_exit(void)
+ {
++#ifdef CONFIG_MTK_VIDEOX_LIVEDISPLAY
++	mutex_destroy(&mtk_rgb_work_queue.lock);
++	sysfs_remove_file(&(mtk_disp_mgr_device.dev.kobj), &dev_attr_rgb.attr);
++#endif
+ 	cdev_del(mtk_disp_mgr_cdev);
+ 	unregister_chrdev_region(mtk_disp_mgr_devno, 1);
+ 
 diff --git a/drivers/power/mediatek/battery_common.c b/drivers/power/mediatek/battery_common.c
 index bb5d682b..97555a07 100644
 --- a/drivers/power/mediatek/battery_common.c
@@ -55681,6 +55866,42 @@ index e49cfdec..d37903b2 100644
  }
  
  int mtk_chr_reset_aicr_upper_bound(void)
+diff --git a/drivers/usb/gadget/function/f_fs.c b/drivers/usb/gadget/function/f_fs.c
+index 6577d124..1edd7c65 100644
+--- a/drivers/usb/gadget/function/f_fs.c
++++ b/drivers/usb/gadget/function/f_fs.c
+@@ -24,6 +24,7 @@
+ #include <linux/hid.h>
+ #include <linux/module.h>
+ #include <asm/unaligned.h>
++#include <asm/uaccess.h>
+ 
+ #include <linux/usb/composite.h>
+ #include <linux/usb/functionfs.h>
+@@ -661,6 +662,7 @@ static void ffs_user_copy_worker(struct work_struct *work)
+ 	if (io_data->read && ret > 0) {
+ 		int i;
+ 		size_t pos = 0;
++		mm_segment_t oldfs = get_fs();
+ 
+ 		/*
+ 		 * Since req->length may be bigger than io_data->len (after
+@@ -669,6 +671,7 @@ static void ffs_user_copy_worker(struct work_struct *work)
+ 		 */
+ 		ret = min_t(int, ret, io_data->len);
+ 
++		set_fs(USER_DS);
+ 		use_mm(io_data->mm);
+ 		for (i = 0; i < io_data->nr_segs; i++) {
+ 			size_t len = min_t(size_t, ret - pos,
+@@ -683,6 +686,7 @@ static void ffs_user_copy_worker(struct work_struct *work)
+ 			pos += len;
+ 		}
+ 		unuse_mm(io_data->mm);
++		set_fs(oldfs);
+ 	}
+ 
+ 	aio_complete(io_data->kiocb, ret, ret);
 diff --git a/drivers/usb/gadget/function/f_mtp.c b/drivers/usb/gadget/function/f_mtp.c
 index 9620bec6..fb1993f6 100644
 --- a/drivers/usb/gadget/function/f_mtp.c
@@ -55694,6 +55915,18 @@ index 9620bec6..fb1993f6 100644
  			MTP_QUEUE_DBG("NOT MtpServer.........\n");
  			mtp_dbg_dump();
  
+diff --git a/net/core/dev.c b/net/core/dev.c
+index f268ad1b..55375df5 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -1206,6 +1206,7 @@ rollback:
+ 
+ 	return err;
+ }
++EXPORT_SYMBOL(dev_change_name);
+ 
+ /**
+  *	dev_set_alias - change ifalias of a device
 diff --git a/scripts/drvgen/drvgen.mk b/scripts/drvgen/drvgen.mk
 index c4a0f25a..db1e9c3b 100644
 --- a/scripts/drvgen/drvgen.mk

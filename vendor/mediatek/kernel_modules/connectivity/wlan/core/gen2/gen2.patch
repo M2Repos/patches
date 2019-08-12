@@ -1,0 +1,54 @@
+From bf6a541fd89234f589d5e54238873abd4bb1f8d4 Mon Sep 17 00:00:00 2001
+From: Dinolek <18579460+Dinolek@users.noreply.github.com>
+Date: Tue, 13 Aug 2019 00:41:02 +0200
+Subject: [PATCH] wlan0 hotspot
+
+---
+ os/linux/gl_init.c     | 10 ++++++++--
+ os/linux/gl_p2p_init.c |  2 +-
+ 2 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/os/linux/gl_init.c b/os/linux/gl_init.c
+index 0aa7e58..b368b12 100644
+--- a/os/linux/gl_init.c
++++ b/os/linux/gl_init.c
+@@ -225,6 +225,8 @@ const UINT_32 mtk_cipher_suites[] = {
+ 
+ /* NIC interface name */
+ #define NIC_INF_NAME    "wlan%d"	/* interface name */
++#define NIC_INF_NAME_IN_AP_MODE  "legacy%d"
++extern volatile int wlan_if_changed;
+ #if CFG_TC10_FEATURE
+ #define WIFI_VERION_INFO_FILE   "/data/misc/conn/.wifiver.info"
+ #define WIFI_SOFTAP_INFO_FILE   "/data/misc/conn/.softap.info"
+@@ -2018,8 +2020,12 @@ static struct wireless_dev *wlanNetCreate(PVOID pvData)
+ 	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(prWdev->wiphy);
+ 	kalMemZero(prGlueInfo, sizeof(GLUE_INFO_T));
+ 	/* 4 <3.1> Create net device */
+-	prGlueInfo->prDevHandler = alloc_netdev_mq(sizeof(P_GLUE_INFO_T), NIC_INF_NAME,
+-						   NET_NAME_PREDICTABLE, ether_setup, CFG_MAX_TXQ_NUM);
++	if (wlan_if_changed)
++		prGlueInfo->prDevHandler = alloc_netdev_mq(sizeof(P_GLUE_INFO_T), NIC_INF_NAME_IN_AP_MODE,
++							   NET_NAME_PREDICTABLE, ether_setup, CFG_MAX_TXQ_NUM);
++	else
++		prGlueInfo->prDevHandler = alloc_netdev_mq(sizeof(P_GLUE_INFO_T), NIC_INF_NAME,
++							   NET_NAME_PREDICTABLE, ether_setup, CFG_MAX_TXQ_NUM);
+ 
+ 	/* Device can help us to save at most 3000 packets, after we stopped queue */
+ 	if (prGlueInfo->prDevHandler != NULL)
+diff --git a/os/linux/gl_p2p_init.c b/os/linux/gl_p2p_init.c
+index e683f1a..40c4e94 100644
+--- a/os/linux/gl_p2p_init.c
++++ b/os/linux/gl_p2p_init.c
+@@ -27,7 +27,7 @@
+ */
+ 
+ #define P2P_INF_NAME "p2p%d"
+-#define AP_INF_NAME  "ap%d"
++#define AP_INF_NAME  "wlan%d"
+ 
+ #define RUNNING_P2P_MODE  0
+ #define RUNNING_AP_MODE   1
+-- 
+2.22.0
+

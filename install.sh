@@ -1,6 +1,9 @@
 #!/bin/sh
 rootdirectory="$PWD"
-dirs="device/mediatek/common device/mediatek/mt6735 frameworks/base kernel-3.18 vendor/mediatek/proprietary/custom vendor/mediatek/proprietary/hardware/liblights"
+dirs="device/mediatek/common device/mediatek/mt6735 frameworks/base kernel-3.18 vendor/mediatek/proprietary/custom vendor/mediatek/proprietary/hardware/liblights vendor/mediatek/proprietary/hardware/ril"
+if [ "$1" == "wlan0" ]; then
+    dirs="$dirs vendor/mediatek/kernel_modules/connectivity/wlan/adaptor vendor/mediatek/kernel_modules/connectivity/wlan/core/gen2"
+fi
 
 for dir in $dirs ; do
     cd $rootdirectory

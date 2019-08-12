@@ -1,0 +1,69 @@
+From e6641e13c752fc23a136d2becd202828cdee9d9e Mon Sep 17 00:00:00 2001
+From: Dinolek <18579460+Dinolek@users.noreply.github.com>
+Date: Tue, 13 Aug 2019 00:33:57 +0200
+Subject: [PATCH] fix ussd and incoming calls
+
+---
+ gsm/mtk-ril/ril_ss.c            |  3 +++
+ rilproxy/libril/ril_service.cpp | 15 ++++++++-------
+ 2 files changed, 11 insertions(+), 7 deletions(-)
+
+diff --git a/gsm/mtk-ril/ril_ss.c b/gsm/mtk-ril/ril_ss.c
+index 57d480b..f246677 100644
+--- a/gsm/mtk-ril/ril_ss.c
++++ b/gsm/mtk-ril/ril_ss.c
+@@ -2133,6 +2133,9 @@ static void onUssd(char *s, RIL_SOCKET_ID rid)
+        goto error;
+     }
+ 
++    if (!strcmp(p_data[0], "2"))
++        p_data[0] = "0";
++
+     length++;
+ 
+     /* Check if there is <str> */
+diff --git a/rilproxy/libril/ril_service.cpp b/rilproxy/libril/ril_service.cpp
+index 16c3726..ee0a358 100644
+--- a/rilproxy/libril/ril_service.cpp
++++ b/rilproxy/libril/ril_service.cpp
+@@ -11750,29 +11750,30 @@ int radio::incomingCallIndicationInd(int slotId, int indicationType,
+     }
+ 
+     //      case RIL_UNSOL_INCOMING_CALL_INDICATION: ret = responseStrings(p); break;
+-    if (radioService[slotId] != NULL && radioService[slotId]->mRadioIndicationMtk != NULL) {
++    if (radioService[slotId] != NULL && radioService[slotId]->mRadioIndication != NULL) {
+         if (response == NULL || responseLen != 7 * sizeof(char *)) {
+             RLOGE("incomingCallIndicationInd: invalid response");
+             return 0;
+         }
+-        IncomingCallNotification inCallNotify = {};
++        //IncomingCallNotification inCallNotify = {};
+         char **strings = (char **) response;
+         // EAIC: <callId>, <number>, <type>, <call mode>, <seq no>
+-        inCallNotify.callId = convertCharPtrToHidlString(strings[0]);
++        /*inCallNotify.callId = convertCharPtrToHidlString(strings[0]);
+         inCallNotify.number = convertCharPtrToHidlString(strings[1]);
+         inCallNotify.type = convertCharPtrToHidlString(strings[2]);
+         inCallNotify.callMode = convertCharPtrToHidlString(strings[3]);
+         inCallNotify.seqNo = convertCharPtrToHidlString(strings[4]);
+-        inCallNotify.redirectNumber = convertCharPtrToHidlString(strings[5]);
++        inCallNotify.redirectNumber = convertCharPtrToHidlString(strings[5]);*/
+         // string[6] is used by ims. no need here.
+         RLOGD("incomingCallIndicationInd: %s, %s, %s, %s, %s, %s",
+                 strings[0], strings[1], strings[2],
+                 strings[3], strings[4], strings[5]);
+-        Return<void> retStatus = radioService[slotId]->mRadioIndicationMtk->incomingCallIndication(
++        /*Return<void> retStatus = radioService[slotId]->mRadioIndicationMtk->incomingCallIndication(
+                 convertIntToRadioIndicationType(indicationType), inCallNotify);
+-        radioService[slotId]->checkReturnStatus(retStatus, RADIO_MTK);
++        radioService[slotId]->checkReturnStatus(retStatus, RADIO_MTK);*/
++        dispatchInts(0x4242, slotId, RIL_REQUEST_SET_CALL_INDICATION, 3, std::stoi(strings[3]), std::stoi(strings[0]), std::stoi(strings[4]));
+     } else {
+-        RLOGE("incomingCallIndicationInd: radioService[%d]->mRadioIndicationMtk == NULL", slotId);
++        RLOGE("incomingCallIndicationInd: radioService[%d]->mRadioIndication == NULL", slotId);
+     }
+ 
+ 
+-- 
+2.22.0
+
