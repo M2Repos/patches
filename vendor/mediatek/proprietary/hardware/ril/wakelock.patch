@@ -1,0 +1,28 @@
+From 6d3005640b03f3941d03561111e421ce06a6cd7c Mon Sep 17 00:00:00 2001
+From: Dinolek <18579460+Dinolek@users.noreply.github.com>
+Date: Mon, 16 Sep 2019 19:45:14 +0200
+Subject: [PATCH] wakelock fix
+
+---
+ platformlib/common/libmtkrilutils/libmtkrilutils.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/platformlib/common/libmtkrilutils/libmtkrilutils.c b/platformlib/common/libmtkrilutils/libmtkrilutils.c
+index 9bda405..539a272 100644
+--- a/platformlib/common/libmtkrilutils/libmtkrilutils.c
++++ b/platformlib/common/libmtkrilutils/libmtkrilutils.c
+@@ -484,9 +484,9 @@ int readMccMnc(RIL_SOCKET_ID rid, char *mccmnc) {
+         return READ_MCC_MNC_ERR_NULL_MEM;
+     }
+     if (rid == RIL_SOCKET_1) {
+-        asprintf(&prop, "%s", PROPERTY_MCC_MNC);
++        asprintf(&prop, "%s", "vendor.ril.nw.operator.mccmnc.1");
+     } else {
+-        asprintf(&prop, "%s.%c", PROPERTY_MCC_MNC, rid + '0');
++        asprintf(&prop, "%s.%c", "vendor.ril.nw.operator.mccmnc", rid + '0' + 1);
+     }
+     mtk_property_get(prop, mccmnc, "0");
+     if (strcmp("N/A", mccmnc) == 0) {
+-- 
+2.23.0
+

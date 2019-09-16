@@ -1,0 +1,22 @@
+From 10fc4d1e54ee09507ec9376272dccbe673787388 Mon Sep 17 00:00:00 2001
+From: Dinolek <18579460+Dinolek@users.noreply.github.com>
+Date: Mon, 16 Sep 2019 20:05:52 +0200
+Subject: [PATCH] python2
+
+---
+ build/tools/repo_dep_check.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/build/tools/repo_dep_check.py b/build/tools/repo_dep_check.py
+index 316b6af..8b15352 100755
+--- a/build/tools/repo_dep_check.py
++++ b/build/tools/repo_dep_check.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python -B
++#!/usr/bin/python2 -B
+ import sys, os, re, collections, json, argparse, logging
+ from fs_utils import feature_switch, extend_path, EXCLUDED_ARRT_KEY, update_build_vars
+ default_config_fn = 'vendor/mediatek/switch_config/${TARGET_BOARD_PLATFORM}/feature_switchable.all.json'
+-- 
+2.23.0
+

@@ -1,27 +1,12 @@
-From e6641e13c752fc23a136d2becd202828cdee9d9e Mon Sep 17 00:00:00 2001
+From 887a24f1deda66b59c187c9ccf8b96b05e6af07a Mon Sep 17 00:00:00 2001
 From: Dinolek <18579460+Dinolek@users.noreply.github.com>
-Date: Tue, 13 Aug 2019 00:33:57 +0200
-Subject: [PATCH] fix ussd and incoming calls
+Date: Mon, 16 Sep 2019 19:47:06 +0200
+Subject: [PATCH] incoming calls fix
 
 ---
- gsm/mtk-ril/ril_ss.c            |  3 +++
  rilproxy/libril/ril_service.cpp | 15 ++++++++-------
- 2 files changed, 11 insertions(+), 7 deletions(-)
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/gsm/mtk-ril/ril_ss.c b/gsm/mtk-ril/ril_ss.c
-index 57d480b..f246677 100644
---- a/gsm/mtk-ril/ril_ss.c
-+++ b/gsm/mtk-ril/ril_ss.c
-@@ -2133,6 +2133,9 @@ static void onUssd(char *s, RIL_SOCKET_ID rid)
-        goto error;
-     }
- 
-+    if (!strcmp(p_data[0], "2"))
-+        p_data[0] = "0";
-+
-     length++;
- 
-     /* Check if there is <str> */
 diff --git a/rilproxy/libril/ril_service.cpp b/rilproxy/libril/ril_service.cpp
 index 16c3726..ee0a358 100644
 --- a/rilproxy/libril/ril_service.cpp
@@ -65,5 +50,5 @@ index 16c3726..ee0a358 100644
  
  
 -- 
-2.22.0
+2.23.0
 

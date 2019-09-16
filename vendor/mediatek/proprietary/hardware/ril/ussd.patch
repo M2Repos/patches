@@ -1,0 +1,26 @@
+From f9f339ae8992a6a85b7d6c4c0bd3f78d3d356cab Mon Sep 17 00:00:00 2001
+From: Dinolek <18579460+Dinolek@users.noreply.github.com>
+Date: Mon, 16 Sep 2019 19:46:39 +0200
+Subject: [PATCH] ussd fix
+
+---
+ gsm/mtk-ril/ril_ss.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/gsm/mtk-ril/ril_ss.c b/gsm/mtk-ril/ril_ss.c
+index 57d480b..f246677 100644
+--- a/gsm/mtk-ril/ril_ss.c
++++ b/gsm/mtk-ril/ril_ss.c
+@@ -2133,6 +2133,9 @@ static void onUssd(char *s, RIL_SOCKET_ID rid)
+        goto error;
+     }
+ 
++    if (!strcmp(p_data[0], "2"))
++        p_data[0] = "0";
++
+     length++;
+ 
+     /* Check if there is <str> */
+-- 
+2.23.0
+
