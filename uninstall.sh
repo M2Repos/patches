@@ -1,7 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
 rootdirectory="$PWD"
 dirs="device/mediatek/build device/mediatek/common device/mediatek/mt6735 frameworks/base kernel-3.18 vendor/mediatek/proprietary/custom vendor/mediatek/proprietary/hardware/liblights vendor/mediatek/proprietary/hardware/ril"
+
+[ ! -d "$PWD/build" ] || [ ! -d "$PWD/device/mediatek" ] && echo "Incorrect folder" && exit 0
 
 cd vendor/mediatek/kernel_modules/connectivity/wlan/adaptor
 adapter_status=$(git diff)

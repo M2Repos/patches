@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ "$1" == "-h" ] || [ -z "$1" ] || [ "$1" != "wlan0" ] && [ "$1" != "ap0" ]; then
   echo -e "Usage:
@@ -9,6 +9,8 @@ if [ "$1" == "-h" ] || [ -z "$1" ] || [ "$1" != "wlan0" ] && [ "$1" != "ap0" ]; 
  for wlan0 hotspot(for vendor blobs usage only)"
   exit 0
 fi
+
+[ ! -d "$PWD/build" ] || [ ! -d "$PWD/device/mediatek" ] && echo "Incorrect folder" && exit 0
 
 rootdirectory="$PWD"
 dirs="device/mediatek/build device/mediatek/common device/mediatek/mt6735 frameworks/base kernel-3.18 vendor/mediatek/proprietary/custom vendor/mediatek/proprietary/hardware/liblights vendor/mediatek/proprietary/hardware/ril"
