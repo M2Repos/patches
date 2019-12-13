@@ -1,0 +1,2 @@
+# Input devices
+/(vendor|system/vendor)/usr/keylayout(/.*)?                   u:object_r:keylayout_file:s0

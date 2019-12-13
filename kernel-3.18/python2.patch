@@ -1,0 +1,22 @@
+From 2f927f02215eb72ad58292bf402f97b133d806e8 Mon Sep 17 00:00:00 2001
+From: Dinolek <18579460+Dinolek@users.noreply.github.com>
+Date: Sun, 3 Nov 2019 16:09:03 +0100
+Subject: [PATCH] python2
+
+---
+ tools/dct/DrvGen.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/dct/DrvGen.py b/tools/dct/DrvGen.py
+index ebc280c6..6e354844 100755
+--- a/tools/dct/DrvGen.py
++++ b/tools/dct/DrvGen.py
+@@ -1,4 +1,4 @@
+-#! /usr/bin/python
++#! /usr/bin/python2
+ # -*- coding: utf-8 -*-
+ 
+ # Copyright (C) 2016 MediaTek Inc.
+-- 
+2.23.0
+

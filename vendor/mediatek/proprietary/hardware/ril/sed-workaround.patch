@@ -1,0 +1,28 @@
+From 4f91c8fbe38033327de81c1b9e78c5dfa9700e52 Mon Sep 17 00:00:00 2001
+From: Dinolek <18579460+Dinolek@users.noreply.github.com>
+Date: Sun, 27 Oct 2019 13:10:18 +0100
+Subject: [PATCH] gsi's sed workaround
+
+---
+ gsm/mtk-ril/ril_callbacks.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/gsm/mtk-ril/ril_callbacks.c b/gsm/mtk-ril/ril_callbacks.c
+index c542f8c0..94736829 100644
+--- a/gsm/mtk-ril/ril_callbacks.c
++++ b/gsm/mtk-ril/ril_callbacks.c
+@@ -1774,8 +1774,10 @@ static void initializeCallback(void *param)
+         }
+     }
+ #endif
++    char eaic[] = "UT+EAIC=2";
++    eaic[0] = 'A';
+ 
+-    at_send_command("AT+EAIC=2", NULL, pChannel);
++    at_send_command(eaic, NULL, pChannel);
+ 
+     at_send_command("AT+CLIP=1", NULL, pChannel);
+ 
+-- 
+2.23.0
+

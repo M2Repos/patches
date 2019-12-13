@@ -3,8 +3,6 @@ PRODUCT_COPY_FILES += $(call find-copy-subdir-files,*,device/meizu/mblu2/prebuil
 
 -include device/meizu/mblu2/system_prop.mk
 
-PRODUCT_COPY_FILES += $(LOCAL_PATH)/init.project.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.project.rc
-
 ifeq ($(MTK_SMARTBOOK_SUPPORT),yes)
 PRODUCT_COPY_FILES += $(LOCAL_PATH)/sbk-kpd.kl:system/usr/keylayout/sbk-kpd.kl:mtk \
                       $(LOCAL_PATH)/sbk-kpd.kcm:system/usr/keychars/sbk-kpd.kcm:mtk
@@ -89,12 +87,8 @@ ifneq (yes,$(strip $(MTK_TABLET_PLATFORM)))
     endif
   endif
 endif
-ifeq (yes,$(strip $(MTK_GMO_ROM_OPTIMIZE)))
-  DEVICE_PACKAGE_OVERLAYS += device/mediatek/common/overlay/slim_rom
-endif
-ifeq (yes,$(strip $(MTK_GMO_RAM_OPTIMIZE)))
-  DEVICE_PACKAGE_OVERLAYS += device/mediatek/common/overlay/slim_ram
-endif
+
+
 DEVICE_PACKAGE_OVERLAYS += device/mediatek/common/overlay/navbar
 
 ifeq ($(strip $(OPTR_SPEC_SEG_DEF)),NONE)
